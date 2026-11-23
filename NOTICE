@@ -1,0 +1,30 @@
+# NOTICE
+
+## This repository is a FORK
+
+`grindr-plus-plus-mt` is an independent fork of **Grindr++** by
+[@fatterdev](https://github.com/fatterdev/grindr-plus-plus), itself a
+continuation of the archived **GrindrPlus** line:
+
+- Original idea and mod: [ElJaviLuki/GrindrPlus](https://github.com/ElJaviLuki/GrindrPlus)
+- Rewrite through archive: [R0rt1z2/GrindrPlus](https://github.com/R0rt1z2/GrindrPlus)
+- The Grindr++ product tree this fork is based on: [fatterdev/grindr-plus-plus](https://github.com/fatterdev/grindr-plus-plus)
+
+**Upstream GrindrPlus lineage (the hooks this fork inherits):**
+[gustarmartins/GrindrPlus](https://github.com/gustarmartins/GrindrPlus) — v5.0.1 (based on Grindr v26.0.1),
+commit `c43f6c4`. All hook implementations, the module/manager architecture, the
+LSPatch embedder and the persistence layer originate there. Credit belongs to
+@gustarmartins and the contributors listed upstream.
+
+**What this fork adds (mtantongco):**
+
+1. Version-spoof defaults baked to `26.24.0 / 195444` (compiled, not config-only)
+2. `AssignmentsInterceptor` extension: JWT `experiments` claim rewriting from
+   `experiment_<name>` config keys — client-side A/B override
+3. Docs: timeline, superpowers, beginner + expert install guides, diagrams
+
+**Licence:** GPL-3.0 (unchanged, see LICENSE). Do not present this tree as the
+archived GrindrPlus project. No affiliation with Grindr LLC.
+
+**Mod identity:** signed with `mtantongco.keystore` (alias `mtantongco`).
+Signature differs from upstream release and debug builds — uninstall before switching.
