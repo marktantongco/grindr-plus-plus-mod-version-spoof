@@ -1,0 +1,8 @@
+{
+  "id": "blender-headless",
+  "name": "Blender Headless",
+  "description": "Run Blender without GUI. Headless renders, GLB export and batch processing for Claude automation.",
+  "version": "0.1.0",
+  "files": ["README.md", "render_headless.py", "export_glb.py", "run_blender_headless.sh"],
+  "triggers": ["blender headless", "blender --background", "render without gui", "export glb headless"]
+}
