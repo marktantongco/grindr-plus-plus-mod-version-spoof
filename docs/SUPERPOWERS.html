@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Superpowers — grindr-plus-plus-mt</title>
+<meta name="description" content="Superpowers — grindr-plus-plus-mt">
+<link rel="stylesheet" href="assets/site.css">
+</head><body><div class="wrap">
+<nav class="top"><a href="index.html">grindr-plus-plus<span>-mt</span></a><span class="sep">/</span><span>Superpowers</span></nav>
+<article><p>Five client-side primitives this fork exposes, ranked by leverage. All operate</p>
+<p><b>below</b> the app and <b>above</b> the server.</p>
+<blockquote>Two entitlement axes exist. (a) What the *client believes* — roles, feature</blockquote>
+<blockquote>flags, experiments. (b) What the *server bills* — HTTP 402 <code>tiered_feature</code>.</blockquote>
+<blockquote>Everything here works on axis (a); axis (b) yields only to region spoofing.</blockquote>
+<blockquote>Always ask which axis a broken feature lives on before touching it.</blockquote>
+<h2>1. Device identity rotation</h2>
+<pre><code>touch …/files/&lt;clonePkg&gt;.android_id_regen   # arm
+# restart app → module generates a fresh 16-hex android_id and consumes the marker</code></pre>
+<p>A banned device is a device fingerprint the server already scored. Rotation gives</p>
+<p>it a new one. Verified: <code>8813eb1a31524a1e</code> → <code>e5d29dac22464f4e</code>.</p>
+<p>Rotate <b>on ban</b>, not on schedule — a rotating fingerprint reads as a farm.</p>
+<h2>2. JWT experiment override</h2>
+<p><code>AssignmentsInterceptor</code> rewrites the <code>experiments</code> map inside <code>/v8/sessions</code></p>
+<p>claims before the client parses it. One config line per experiment:</p>
+<pre><code>&quot;experiment_explore-paywall-profiles&quot;: &quot;control&quot;,
+&quot;experiment_limiting_chat_credits_from_unlimited_to_5_for_xtra_users_in_explore&quot;: &quot;control&quot;</code></pre>
+<p>Signature is preserved (payload re-encoded; the client does not verify the</p>
+<p>resource-token signature). Proven: <code>Session experiments rewritten: 4 override(s) applied</code>.</p>
+<p>Discover candidates with <code>dump_raw_assignments: true</code> — raw payloads land in the log.</p>
+<h2>3. Feature-flag console</h2>
+<p><code>core/FeatureDefinitions.kt</code> holds ~100 server flags. Each is forceable per clone</p>
+<p>via <code>feature_flag_&lt;Name&gt;</code> (<code>true</code>/<code>false</code>), e.g. <code>feature_flag_ComposeRework: false</code></p>
+<p>reverts the album UI to the pre-rework path. Unreleased features ship disabled by</p>
+<p>flag; the client renders whatever the flag says.</p>
+<h2>4. Retrofit response forging</h2>
+<p><code>RetrofitUtils.hookService</code> + <code>createSuccess</code> let any service method return a</p>
+<p>locally-forged <code>Success</code>. <code>UnlimitedAlbums</code> uses it for album payloads;</p>
+<p><code>BanManagement</code> for the login result. Extend it to any endpoint to build a local</p>
+<p>entitlements layer.</p>
+<h2>5. Geographic tier bypass</h2>
+<pre><code>printf &#x27;14.0723,-87.1921&#x27; &gt; …/files/&lt;clonePkg&gt;.location   # Honduras
+# revert: 0.0,0.0 or delete the file</code></pre>
+<p>Honduras/Nigeria get <code>UnlimitedExpiringPhotos</code>, <code>UnsendMessage</code> and album-share</p>
+<p>entitlements on free accounts (HTTP 402 tier). Verified in the session JWT.</p>
+<h2>Supporting surfaces</h2>
+<ul><li><b>Chat terminal</b> — <code>/</code>-prefixed commands routed through <code>CommandHandler</code></li><li><b>Multi-clone</b> — manager suffixes <code>.one</code>, <code>.two</code>… each with its own device ID and config</li><li><b>Local media capture</b> — expiring media saved to <code>filesDir/saved_media/{images,videos}</code></li></ul>
+<h2>Verified vs. not</h2>
+<table><tr><th>Working (device-verified)</th><th>Working (code-verified only)</th><th>Server-enforced, no client fix</th></tr>
+<tr><td>identity rotation, experiment override, roles spoof, expiring-media save, album forge path, boost/WS toggles</td><td>flag console, terminal commands, multi-clone</td><td>"Viewed Me", true incognito, message-send entitlement, age verification</td></tr>
+</table></article>
+<footer><p>Fork of fatterdev/grindr-plus-plus → R0rt1z2/GrindrPlus → ElJaviLuki/GrindrPlus; hooks from gustarmartins/GrindrPlus v5.0.1. GPL-3.0. Not affiliated with Grindr LLC.</p></footer>
+</div></body></html>

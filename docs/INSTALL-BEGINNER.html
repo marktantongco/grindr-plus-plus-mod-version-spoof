@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Install — beginner — grindr-plus-plus-mt</title>
+<meta name="description" content="Install — beginner — grindr-plus-plus-mt">
+<link rel="stylesheet" href="assets/site.css">
+</head><body><div class="wrap">
+<nav class="top"><a href="index.html">grindr-plus-plus<span>-mt</span></a><span class="sep">/</span><span>Install — beginner</span></nav>
+<article><p>No root. No terminal. ~15 minutes. Read every step before starting.</p>
+<blockquote><b>This fork is signed differently from upstream.</b> If any other Grindr mod or</blockquote>
+<blockquote>Grindr Plus manager is installed, uninstall it first — otherwise Android refuses</blockquote>
+<blockquote>the install.</blockquote>
+<h2>You need</h2>
+<ul><li>Android 12+ phone, ~1 GB free</li><li>Grindr <b>26.0.1</b> host bundle (<code>com.grindrapp.android_26.0.1-149389…apkm</code>)</li><li><code>GPlus_v5.0.1-26.24.0spoof-mtantongco-release.apk</code> (this fork's manager)</li><li>A second device or a PC for the file transfer</li></ul>
+<h2>Steps</h2>
+<ol><li><b>Uninstall Grindr and any Grindr mod.</b> Settings → Apps → Grindr → Uninstall.</li></ol>
+<p>   Also check *Secure Folder*, *Parallel Space* and *Private Space* — a hidden copy</p>
+<p>   causes <code>INSTALL_FAILED_UPDATE_INCOMPATIBLE</code>.</p>
+<ol><li><b>Install the manager APK</b> from the release page. Allow "install unknown apps"</li></ol>
+<p>   when prompted.</p>
+<ol><li><b>Open Grindr Plus</b> and grant the notification permission.</li><li><b>Copy both files</b> into</li></ol>
+<p>   <code>Android/data/com.grindrplus/files/</code> on internal storage, named exactly:</p>
+<p>   - <code>grindr-v5.0.1-26.0.1.zip</code> (the <code>.apkm</code> bundle, renamed)</p>
+<p>   - <code>mod-v5.0.1-26.0.1.zip</code> (the manager APK, renamed)</p>
+<p>   The manager downloads from a third-party mirror that is often down; pre-placing</p>
+<p>   the files skips the download entirely.</p>
+<ol><li>In the manager, open <b>Install</b>. Read the dialog, tap <b>Understood</b>.</li><li>Tap <b>Install</b>. It extracts, patches all splits, and offers a system installer.</li><li>When Android says <b>"Uninstall this app?"</b> for the stock Grindr, accept.</li><li>Wait. The app may crash once or twice on first launch — that is normal, relaunch.</li><li>Log in. The app opens on <b>Browse</b>; the version gate does not appear because</li></ol>
+<p>   the spoof is compiled in.</p>
+<h2>After installing</h2>
+<ul><li>Long-press the <b>Browse</b> tab → status popup. It should show the mod as alive.</li><li>If profiles render blank, whitelist <code>cdn.cookielaw.org</code> in your ad blocker.</li><li>Never update Grindr from the Play Store; re-run <b>Install</b> in the manager instead.</li></ul>
+<h2>Troubleshooting</h2>
+<table><tr><th>Symptom</th><th>Fix</th></tr>
+<tr><td><code>INSTALL_FAILED_UPDATE_INCOMPATIBLE</code></td><td>A hidden copy exists — remove it from Secure Folder / Parallel Space</td></tr>
+<tr><td>Download step fails</td><td>You skipped step 4, or a filename is wrong</td></tr>
+<tr><td>"Update Required" at login</td><td>Manager → Settings → spoof name <code>26.24.0</code>, code <code>195444</code></td></tr>
+<tr><td>Instant crash loop</td><td>Wrong host version — use exactly 26.0.1 (149389)</td></tr>
+</table>
+<h2>First-run checklist</h2>
+<p>☐ Browse shows profiles and no third-party ads</p>
+<p>☐ Long-press Browse shows the status popup</p>
+<p>☐ Settings shows spoof <code>26.24.0 / 195444</code></p></article>
+<footer><p>Fork of fatterdev/grindr-plus-plus → R0rt1z2/GrindrPlus → ElJaviLuki/GrindrPlus; hooks from gustarmartins/GrindrPlus v5.0.1. GPL-3.0. Not affiliated with Grindr LLC.</p></footer>
+</div></body></html>

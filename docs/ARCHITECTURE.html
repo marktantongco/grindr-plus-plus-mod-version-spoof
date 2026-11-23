@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Architecture — grindr-plus-plus-mt</title>
+<meta name="description" content="Architecture — grindr-plus-plus-mt">
+<link rel="stylesheet" href="assets/site.css">
+</head><body><div class="wrap">
+<nav class="top"><a href="index.html">grindr-plus-plus<span>-mt</span></a><span class="sep">/</span><span>Architecture</span></nav>
+<article><p>Request path and where each layer can be intercepted. Read top-down: the app asks,</p>
+<p>the mod rewrites, the server answers.</p>
+<pre class="mermaid"><code>flowchart TD
+  A[Grindr UI&lt;br/&gt;Compose / Activity] --&gt; B[ViewModel / Repository]
+  B --&gt; C[Retrofit service interface]
+  C --&gt; D{RetrofitUtils.hookService}
+  D --&gt;|forge| E[createSuccess / createFail&lt;br/&gt;local entitlement]
+  D --&gt; F[OkHttp call]
+  F --&gt; G{AssignmentsInterceptor&lt;br/&gt;dynamic Proxy}
+  G --&gt;|rewrite| H[JWT experiments&lt;br/&gt;/v8/sessions]
+  G --&gt;|rewrite| I[feature-flag assignments&lt;br/&gt;/v3/assignment]
+  G --&gt; J[network]
+  J --&gt; K[(Grindr server&lt;br/&gt;402 tiered_feature)]
+  K --&gt;|401 / banned| L[BanManagement&lt;br/&gt;device-ID override]
+  K --&gt;|403 WS| M[backoff inflation]
+  A -.-&gt; N[FeatureDefinitions&lt;br/&gt;feature_flag_* config]
+  N -.-&gt; G</code></pre>
+<h2>Layers</h2>
+<table><tr><th>Layer</th><th>Component</th><th>Can change</th><th>Cannot change</th></tr>
+<tr><td>UI</td><td>hook classes (<code>EnableUnlimited</code>, <code>UnlimitedAlbums</code>, …)</td><td>visibility, tab removal, paywall suppression</td><td>what the server sends</td></tr>
+<tr><td>Wire</td><td><code>AssignmentsInterceptor</code>, <code>RetrofitUtils</code></td><td>flags, experiments, response bodies</td><td>signed payloads it does not rewrite</td></tr>
+<tr><td>Identity</td><td><code>BanManagement</code>, <code>SignatureSpoofer</code>, version spoof</td><td>android_id, UA, app version claims</td><td>ban decisions</td></tr>
+<tr><td>Storage</td><td><code>ExpiringMedia</code>, <code>MediaUtils</code></td><td>keep media past expiry</td><td>server-side retention</td></tr>
+</table>
+<h2>Entitlement flow</h2>
+<pre class="mermaid"><code>sequenceDiagram
+  participant App
+  participant Mod
+  participant Srv
+  App-&gt;&gt;Srv: POST /v8/sessions
+  Srv--&gt;&gt;Mod: JWT {roles:[], features:[…], experiments:{…}}
+  Mod-&gt;&gt;Mod: rewrite experiments from experiment_* config
+  Mod--&gt;&gt;App: JWT (signature preserved)
+  App-&gt;&gt;Srv: GET /v3/assignment
+  Srv--&gt;&gt;Mod: assignments[]
+  Mod-&gt;&gt;Mod: override feature_flag_* entries
+  Mod--&gt;&gt;App: assignments (rewritten)
+  App-&gt;&gt;App: render per roles + flags</code></pre>
+<p>The client trusts the payload; the server never re-issues it for a session already</p>
+<p>handed out. That gap is the whole attack surface.</p>
+<h2>Why hooks soft-fail</h2>
+<p>Every obfuscated symbol is resolved through <code>MappingDictionary</code></p>
+<p>(remote pack → device cache → bundled assets → literal). A miss logs and skips</p>
+<p>rather than crashing the host. Consequence: <b>silent partial function</b>. Check</p>
+<p><code>Status Dialog</code> after any Grindr update — a skipped hook is not a working hook.</p>
+<h2>Component map</h2>
+<pre class="mermaid"><code>flowchart LR
+  subgraph module
+    HM[HookManager] --&gt; HK[hooks/*]
+    HK --&gt; MD[MappingDictionary]
+    HK --&gt; RT[RetrofitUtils]
+  end
+  subgraph manager
+    UI[Compose settings] --&gt; CFG[Config JSON]
+    UI --&gt; INST[Installation&lt;br/&gt;LSPatch embed]
+  end
+  CFG --&gt;|bridge| HK
+  INST --&gt;|patched clone| HM</code></pre></article>
+<footer><p>Fork of fatterdev/grindr-plus-plus → R0rt1z2/GrindrPlus → ElJaviLuki/GrindrPlus; hooks from gustarmartins/GrindrPlus v5.0.1. GPL-3.0. Not affiliated with Grindr LLC.</p></footer>
+</div></body></html>

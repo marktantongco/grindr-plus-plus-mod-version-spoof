@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bypass decision diagram — grindr-plus-plus-mt</title>
+<meta name="description" content="Bypass decision diagram — grindr-plus-plus-mt">
+<link rel="stylesheet" href="assets/site.css">
+</head><body><div class="wrap">
+<nav class="top"><a href="index.html">grindr-plus-plus<span>-mt</span></a><span class="sep">/</span><span>Bypass decision diagram</span></nav>
+<article><p>Use before touching any broken feature. The branch point decides whether code or</p>
+<p>config is the right lever.</p>
+<pre class="mermaid"><code>flowchart TD
+  S[Feature broken] --&gt; Q1{Does the client gate it&lt;br/&gt;on roles or a flag?}
+  Q1 --&gt;|yes| A1[Axis A — client belief&lt;br/&gt;roles spoof / feature_flag_* / experiment_*]
+  Q1 --&gt;|no| Q2{Does the server answer 402&lt;br/&gt;tiered_feature?}
+  Q2 --&gt;|yes| A2[Axis B — server billing&lt;br/&gt;region spoof → re-session]
+  Q2 --&gt;|no| Q3{Is it a ban or version gate?}
+  Q3 --&gt;|ban| A3[Identity rotation marker&lt;br/&gt;+ re-login]
+  Q3 --&gt;|version| A4[Spoof pair 26.24.0 / 195444]
+  Q3 --&gt;|neither| Q4{Is the endpoint reachable&lt;br/&gt;and the shape known?}
+  Q4 --&gt;|yes| A5[hookService + createSuccess&lt;br/&gt;forge the response]
+  Q4 --&gt;|no| A6[Re-map the DEX fingerprint&lt;br/&gt;then forge]
+  A1 --&gt; V[Verify: log line + UI render]
+  A2 --&gt; V
+  A3 --&gt; V
+  A4 --&gt; V
+  A5 --&gt; V
+  A6 --&gt; V
+  V --&gt; R{Works?}
+  R --&gt;|no| S
+  R --&gt;|yes| D[Record in RELEASE-TIMELINE.md]</code></pre>
+<h2>Axis cheat sheet</h2>
+<table><tr><th>Axis</th><th>Lever</th><th>Cost</th><th>Reversible</th></tr>
+<tr><td>A — client belief</td><td>config keys</td><td>seconds</td><td>yes, delete key</td></tr>
+<tr><td>B — server billing</td><td>location marker</td><td>seconds</td><td>yes, revert coords</td></tr>
+<tr><td>Identity</td><td>regen marker</td><td>seconds</td><td>no — old ID retired</td></tr>
+<tr><td>Wire</td><td>Kotlin + rebuild</td><td>~2 min</td><td>yes, revert commit</td></tr>
+<tr><td>Mapping</td><td>DEX re-analysis</td><td>minutes–hours</td><td>yes</td></tr>
+</table>
+<h2>Anti-patterns</h2>
+<ul><li>Editing config while the manager runs — it overwrites from memory</li><li>Rotating identity on a schedule — looks like a farm</li><li>Forcing a flag the server also validates, then blaming the client</li><li>Treating a skipped hook as a pass</li></ul></article>
+<footer><p>Fork of fatterdev/grindr-plus-plus → R0rt1z2/GrindrPlus → ElJaviLuki/GrindrPlus; hooks from gustarmartins/GrindrPlus v5.0.1. GPL-3.0. Not affiliated with Grindr LLC.</p></footer>
+</div></body></html>

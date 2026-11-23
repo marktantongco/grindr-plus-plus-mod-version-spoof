@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Install — expert — grindr-plus-plus-mt</title>
+<meta name="description" content="Install — expert — grindr-plus-plus-mt">
+<link rel="stylesheet" href="assets/site.css">
+</head><body><div class="wrap">
+<nav class="top"><a href="index.html">grindr-plus-plus<span>-mt</span></a><span class="sep">/</span><span>Install — expert</span></nav>
+<article><p>Assumes adb, a build toolchain and comfort with <code>pm</code>/<code>logcat</code>. Two paths:</p>
+<p><b>consume the release</b> or <b>build from source</b>.</p>
+<h2>Constraints</h2>
+<ul><li>Host must be Grindr <b>26.0.1 / 149389</b>. Other versionCodes need a mapping refresh.</li><li>Signature: <code>mtantongco.keystore</code> (alias <code>mtantongco</code>, pass <code>mtantongco</code>).</li></ul>
+<p>  <code>KeyStoreUtils</code> keeps the *clone* signing key in the manager's <code>cacheDir</code> — it dies</p>
+<p>  with an uninstall, so every manager reinstall produces a fresh clone signature.</p>
+<ul><li>Manager uninstall wipes <code>Android/data/com.grindrplus/</code>; the config migration also</li></ul>
+<p>  rebuilds the hook registry to defaults and drops global keys. Re-apply config after</p>
+<p>  any reinstall.</p>
+<h2>A. Consume the release</h2>
+<pre><code>adb push GPlus_v5.0.1-26.24.0spoof-mtantongco-release.apk \
+  /storage/emulated/0/Android/data/com.grindrplus/files/mod-v5.0.1-26.0.1.zip
+adb push com.grindrapp.android_26.0.1-149389…apkm \
+  /storage/emulated/0/Android/data/com.grindrplus/files/grindr-v5.0.1-26.0.1.zip
+adb uninstall com.grindrapp.android      # clear stale same-package copies first
+adb uninstall com.grindrplus
+adb install GPlus_v5.0.1-26.24.0spoof-mtantongco-release.apk
+adb shell pm grant com.grindrplus android.permission.POST_NOTIFICATIONS
+# then drive the manager UI: Install → Understood → Install → confirm system prompt</code></pre>
+<h2>B. Build from source</h2>
+<pre><code>./gradlew :app:assembleRelease -x lint          # ~2 min warm
+BT=$ANDROID_HOME/build-tools/35.0.0
+$BT/zipalign -f -p 4 app/build/outputs/apk/release/GPlus_*-release.apk aligned.apk
+$BT/apksigner sign --ks mtantongco.keystore --ks-pass pass:mtantongco \
+  --key-pass pass:mtantongco --out GPlus_tantongco-release.apk aligned.apk</code></pre>
+<p>Verify before shipping: <code>unzip -p GPlus_tantongco-release.apk classes3.dex | strings | grep -c experiment_</code></p>
+<p>should be non-zero.</p>
+<h2>Configuration</h2>
+<p>All per-clone keys live under <code>clones.&lt;package&gt;</code> in</p>
+<p><code>Android/data/com.grindrplus/files/grindrplus.json</code>.</p>
+<p><b>Edit procedure (the manager rewrites the file from memory if it is running):</b></p>
+<pre><code>adb shell am force-stop com.grindrplus
+adb shell am force-stop &lt;clonePkg&gt;
+adb pull …/grindrplus.json &amp;&amp; &lt;edit&gt; &amp;&amp; adb push …/grindrplus.json
+adb shell monkey -p &lt;clonePkg&gt; -c android.intent.category.LAUNCHER 1</code></pre>
+<p>Useful keys:</p>
+<table><tr><th>Key</th><th>Value</th><th>Effect</th></tr>
+<tr><td><code>android_device_id</code></td><td>16 hex</td><td>spoofed android_id</td></tr>
+<tr><td><code>experiment_&lt;name&gt;</code></td><td><code>control</code> / variant</td><td>JWT experiment override</td></tr>
+<tr><td><code>feature_flag_&lt;Name&gt;</code></td><td><code>true</code>/<code>false</code></td><td>server feature flag</td></tr>
+<tr><td><code>dump_raw_assignments</code></td><td><code>true</code></td><td>dump raw assignment/session payloads</td></tr>
+<tr><td><code>hooks["Disable boosting"].enabled</code></td><td><code>false</code></td><td>enable boost/roam UI</td></tr>
+<tr><td><code>forced_coordinates</code></td><td><code>lat,lon</code></td><td>location spoof</td></tr>
+</table>
+<h2>Marker files (no config edit needed)</h2>
+<pre><code>touch …/files/&lt;clonePkg&gt;.android_id_regen     # fresh device ID on next start
+printf &#x27;14.0723,-87.1921&#x27; &gt; …/files/&lt;clonePkg&gt;.location</code></pre>
+<h2>Verification</h2>
+<pre><code>adb logcat -d -s GrindrPlus:* | grep -E &quot;experiments rewritten|Disable boosting is disabled&quot;</code></pre>
+<ul><li><code>Session experiments rewritten: N override(s) applied</code> = engine live</li><li><code>Hook Disable boosting is disabled.</code> = boost enabled</li></ul>
+<h2>Recovery</h2>
+<table><tr><th>Failure</th><th>Action</th></tr>
+<tr><td>Login gate</td><td>spoof <code>26.24.0/195444</code>; force-stop both apps, open modded app first</td></tr>
+<tr><td>Banned response in log</td><td>rotate device ID marker, relaunch</td></tr>
+<tr><td>Clone crashes at launch</td><td>re-run Install (rebuilds splits)</td></tr>
+<tr><td>Everything broken</td><td>uninstall both, redo section A</td></tr>
+</table>
+<h2>Hygiene</h2>
+<ul><li>One manager per device; two live clones waste storage and confuse log reading</li><li>Keep <code>mtantongco.keystore</code> — losing it forces uninstall-before-install forever</li><li>Rotate identity on ban only</li></ul></article>
+<footer><p>Fork of fatterdev/grindr-plus-plus → R0rt1z2/GrindrPlus → ElJaviLuki/GrindrPlus; hooks from gustarmartins/GrindrPlus v5.0.1. GPL-3.0. Not affiliated with Grindr LLC.</p></footer>
+</div></body></html>
