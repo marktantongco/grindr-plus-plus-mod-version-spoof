@@ -1,0 +1,23 @@
+{
+  "$comment": "Annotated clone config schema — values shown are the mtantongco defaults. Lives at Android/data/com.grindrplus/files/grindrplus.json under clones.<pkg>. Edit only with both apps force-stopped.",
+  "clones": {
+    "com.grindrapp.android": {
+      "android_device_id": "e5d29dac22464f4e",
+      "forced_coordinates": null,
+      "dump_raw_assignments": false,
+      "feature_flag_ComposeRework": false,
+      "experiment_explore-paywall-profiles": "control",
+      "experiment_limiting_chat_credits_from_unlimited_to_5_for_xtra_users_in_explore": "control",
+      "hooks": {
+        "Disable boosting": { "enabled": false },
+        "Keep Alive WebSocket": { "enabled": true },
+        "Unlimited albums": { "enabled": true },
+        "Expiring media": { "enabled": true },
+        "Ban management": { "enabled": true }
+      }
+    }
+  },
+  "spoofed_version_name": "26.24.0",
+  "spoofed_version_code": "195444",
+  "maps_api_key": "<google-maps-api-key>"
+}

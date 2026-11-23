@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>grindr-plus-plus-mt</title>
+<meta name="description" content="Fork of Grindr++ with compiled version spoof and a client-side JWT experiment engine.">
+<style>
+  :root{--bg:#12100f;--panel:#1d1613;--ink:#f4ece6;--muted:#a08b7f;--acc:#ff8a3d;--line:#33241c}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 ui-sans-serif,system-ui,-apple-system,sans-serif}
+  a{color:var(--acc)}
+  .wrap{max-width:940px;margin:0 auto;padding:0 24px 96px}
+  header{padding:56px 0 32px;border-bottom:1px solid var(--line)}
+  h1{font:700 40px/1.1 ui-monospace,SFMono-Regular,Menlo,monospace;margin:0 0 12px;letter-spacing:-.5px}
+  h1 span{color:var(--acc)}
+  .sub{color:var(--muted);margin:0 0 20px;font-size:17px;max-width:56ch}
+  .chips{display:flex;gap:8px;flex-wrap:wrap}
+  .chip{font:13px ui-monospace,monospace;color:#ffb887;background:rgba(255,138,61,.12);border:1px solid rgba(255,138,61,.45);border-radius:99px;padding:4px 12px}
+  h2{font-size:22px;margin:44px 0 12px;letter-spacing:-.2px}
+  .grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;text-decoration:none;color:inherit;display:block;transition:.15s}
+  .card:hover{border-color:var(--acc);transform:translateY(-2px)}
+  .card b{display:block;margin-bottom:6px}
+  .card small{color:var(--muted);font-size:13.5px;line-height:1.5}
+  code{font:13.5px ui-monospace,monospace;background:#241a15;border:1px solid var(--line);border-radius:6px;padding:2px 6px}
+  pre{background:#0d0b0a;border:1px solid var(--line);border-radius:12px;padding:16px;overflow:auto}
+  pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.6}
+  table{width:100%;border-collapse:collapse;font-size:14.5px;margin:12px 0}
+  th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line)}
+  th{color:var(--muted);font-weight:600;font-size:12.5px;text-transform:uppercase;letter-spacing:.06em}
+  .warn{border-left:3px solid var(--acc);background:rgba(255,138,61,.07);padding:12px 16px;border-radius:0 10px 10px 0;color:#f0ddd2;font-size:14.5px}
+  footer{margin-top:56px;padding-top:20px;border-top:1px solid var(--line);color:var(--muted);font-size:13.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>grindr-plus-plus<span>-mt</span></h1>
+  <p class="sub">A fork of Grindr++: version spoof compiled into the build, and a client-side JWT experiment engine that overrides Grindr's own A/B decisions.</p>
+  <div class="chips"><span class="chip">GPL-3.0</span><span class="chip">signature: mtantongco</span><span class="chip">host 26.0.1 / 149389</span><span class="chip">spoof 26.24.0 / 195444</span></div>
+</header>
+
+<h2>What this fork adds</h2>
+<table>
+  <tr><th>Change</th><th>Why</th></tr>
+  <tr><td>Spoof defaults compiled to <code>26.24.0 / 195444</code></td><td>Clears the Nov-2026 login gate and survives a config wipe</td></tr>
+  <tr><td>Session JWT <code>experiments</code> map rewritten from config</td><td>Any of Grindr's ~70 live A/B tests becomes one config line</td></tr>
+  <tr><td>Timeline, superpowers, two install guides, diagrams</td><td>Upstream assumes you already know the mod</td></tr>
+</table>
+
+<h2>Start here</h2>
+<div class="grid">
+  <a class="card" href="INSTALL-BEGINNER.html"><b>Install — beginner</b><small>No root, no terminal, ~15 minutes, with a troubleshooting table.</small></a>
+  <a class="card" href="INSTALL-EXPERT.html"><b>Install — expert</b><small>adb, build from source, signing, config keys, recovery.</small></a>
+  <a class="card" href="SUPERPOWERS.html"><b>Superpowers</b><small>Five primitives, ranked, with what is proven and what is not.</small></a>
+  <a class="card" href="ARCHITECTURE.html"><b>Architecture</b><small>Request path, entitlement flow, why hooks soft-fail.</small></a>
+  <a class="card" href="DIAGRAM-BYPASS.html"><b>Bypass decision diagram</b><small>Which axis a broken feature lives on, before you touch it.</small></a>
+  <a class="card" href="RELEASE-TIMELINE.html"><b>Release timeline</b><small>Every measured step, evidence-backed.</small></a>
+</div>
+
+<h2>The one rule</h2>
+<p class="warn">Edit config only with <b>both apps force-stopped</b>. The manager rewrites <code>grindrplus.json</code> from memory while running and will silently undo your edit.</p>
+<pre><code>adb shell am force-stop com.grindrplus
+adb shell am force-stop &lt;clonePkg&gt;
+# edit, push
+adb shell monkey -p &lt;clonePkg&gt; -c android.intent.category.LAUNCHER 1</code></pre>
+
+<h2>Signing</h2>
+<p><code>mtantongco.keystore</code> — alias <code>mtantongco</code>, pass <code>mtantongco</code>. Different from upstream release and debug signatures: uninstall before switching. Losing the key forces the uninstall dance on every future build.</p>
+
+<footer>
+  <p>Fork of <a href="https://github.com/fatterdev/grindr-plus-plus">fatterdev/grindr-plus-plus</a> → <a href="https://github.com/R0rt1z2/GrindrPlus">R0rt1z2/GrindrPlus</a> → <a href="https://github.com/ElJaviLuki/GrindrPlus">ElJaviLuki/GrindrPlus</a>; hooks from <a href="https://github.com/gustarmartins/GrindrPlus">gustarmartins/GrindrPlus</a> v5.0.1. Not affiliated with Grindr LLC.</p>
+</footer>
+</div>
+</body>
+</html>

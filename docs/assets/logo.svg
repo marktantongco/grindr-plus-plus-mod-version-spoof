@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" role="img" aria-label="grindr-plus-plus-mt mark">
+  <rect width="128" height="128" rx="28" fill="#1d1613"/>
+  <path d="M32 44h20l12 26 12-26h20L72 100H56z" fill="#ff8a3d"/>
+  <circle cx="64" cy="34" r="7" fill="#fff"/>
+  <path d="M24 108h80" stroke="#ff8a3d" stroke-width="2" stroke-dasharray="5 6" opacity="0.6"/>
+</svg>

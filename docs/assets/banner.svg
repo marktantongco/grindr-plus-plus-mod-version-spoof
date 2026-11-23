@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="260" viewBox="0 0 1200 260" role="img" aria-label="grindr-plus-plus-mt fork banner">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#12100f"/><stop offset="0.55" stop-color="#1d1613"/><stop offset="1" stop-color="#3a2016"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.78" cy="0.3" r="0.5">
+      <stop offset="0" stop-color="#ff8a3d" stop-opacity="0.55"/><stop offset="1" stop-color="#ff8a3d" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="260" fill="url(#g)"/>
+  <rect width="1200" height="260" fill="url(#glow)"/>
+  <g stroke="#ff8a3d" stroke-width="1.2" opacity="0.45">
+    <path d="M0 200 H1200"/><path d="M0 220 H1200" stroke-dasharray="6 10"/>
+  </g>
+  <text x="64" y="108" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" font-size="52" font-weight="700" fill="#fff">grindr-plus-plus<tspan fill="#ff8a3d">-mt</tspan></text>
+  <text x="66" y="150" font-family="ui-sans-serif,system-ui,sans-serif" font-size="21" fill="#e7d9cf">fork of Grindr++ · spoof 26.24.0/195444 · JWT experiment engine · host 26.0.1</text>
+  <g font-family="ui-monospace,monospace" font-size="14" fill="#ff8a3d">
+    <rect x="66" y="176" width="150" height="26" rx="13" fill="#ff8a3d" fill-opacity="0.12" stroke="#ff8a3d" stroke-opacity="0.5"/>
+    <text x="84" y="194" fill="#ffb887">GPL-3.0</text>
+    <rect x="228" y="176" width="196" height="26" rx="13" fill="#ff8a3d" fill-opacity="0.12" stroke="#ff8a3d" stroke-opacity="0.5"/>
+    <text x="246" y="194" fill="#ffb887">signature: mtantongco</text>
+    <rect x="436" y="176" width="150" height="26" rx="13" fill="#ff8a3d" fill-opacity="0.12" stroke="#ff8a3d" stroke-opacity="0.5"/>
+    <text x="454" y="194" fill="#ffb887">LSPatch</text>
+  </g>
+  <text x="1136" y="228" text-anchor="end" font-family="ui-sans-serif,sans-serif" font-size="13" fill="#8d7a70">not affiliated with Grindr LLC</text>
+</svg>
