@@ -1,0 +1,85 @@
+package com.grindrplus.hooks
+
+import com.grindrplus.utils.Hook
+import com.grindrplus.utils.HookStage
+import com.grindrplus.utils.hook
+import com.grindrplus.utils.hookConstructor
+import de.robv.android.xposed.XposedHelpers.newInstance
+import de.robv.android.xposed.XposedHelpers.setObjectField
+
+class DisableBoosting : Hook(
+    "Disable boosting",
+    "Get rid of all upsells related to boosting"
+) {
+    private val drawerProfileUiState = "sc0.j\$a" // search for 'DrawerProfileUiState(showBoostMeButton='
+    private val radarUiModel = "r50.a\$a" // search for 'RadarUiModel(boostButton='
+    private val fabUiModel = "com.grindrapp.android.boost2.presentation.model.FabUiModel"
+    private val rightNowMicrosFabUiModel =
+        "com.grindrapp.android.rightnow.presentation.model.RightNowMicrosFabUiModel"
+
+    private val boostStateClass =
+        "com.grindrapp.android.ui.drawer.model.MicrosDrawerItemState\$Unavailable"
+
+	private val navbarClass = "com.grindrapp.android.home.presentation.model.HomeScreenBottomNavigationUiModel"
+	private val smallPersistentVector = "kotlinx.collections.immutable.implementations.immutableList.SmallPersistentVector"
+
+    override fun init() {
+        findClass(drawerProfileUiState).hookConstructor(HookStage.AFTER) { param ->
+            setObjectField(param.thisObject(), "a", false) // showBoostMeButton
+            setObjectField(
+                param.thisObject(),
+                "e",
+                newInstance(findClass(boostStateClass))
+            ) // boostButtonState
+            setObjectField(
+                param.thisObject(),
+                "f",
+                newInstance(findClass(boostStateClass))
+            ) // roamButtonState
+            setObjectField(param.thisObject(), "c", false) // showRNBoostCard
+            setObjectField(param.thisObject(), "i", null) // showDayPassItem
+            setObjectField(param.thisObject(), "j", null) // unlimitedWeeklySubscriptionItem
+            setObjectField(param.thisObject(), "t", false) // isRightNowAvailable
+			setObjectField(param.thisObject(), "v", false) // showMegaBoost
+        }
+
+        findClass(radarUiModel).hookConstructor(HookStage.AFTER) { param ->
+            setObjectField(param.thisObject(), "a", null) // boostButton
+            setObjectField(param.thisObject(), "b", null) // roamButton
+        }
+
+        findClass(fabUiModel).hookConstructor(HookStage.AFTER) { param ->
+            setObjectField(param.thisObject(), "isVisible", false) // isVisible
+        }
+
+        findClass(rightNowMicrosFabUiModel).hookConstructor(HookStage.AFTER) { param ->
+            setObjectField(param.thisObject(), "isBoostFabVisible", false) // isBoostFabVisible
+            setObjectField(param.thisObject(), "isClickEnabled", false) // isClickEnabled
+            setObjectField(param.thisObject(), "isFabVisible", false) // isFabVisible
+        }
+
+        val spvConstructor = findClass(smallPersistentVector).constructors[0]
+
+		findClass(navbarClass).hookConstructor(HookStage.BEFORE) { param ->
+			val routeList = param.args()[2] as List<*>
+			val newRouteArray =	routeList.filter { it?.javaClass?.simpleName != "Store" }.toTypedArray()
+			val newRouteList = spvConstructor.newInstance(newRouteArray)
+
+			param.setArg(2, newRouteList)
+		}
+
+        // the two anonymous functions that get called to invoke the annoying tooltip
+        // respectively: showRadarTooltip.<anonymous> and showTapsAndViewedMePopup
+        // search for:
+        //   ???     - 'com.grindrapp.android.ui.home.HomeActivity$showTapsAndViewedMePopup$1$1'
+        //   ???     - 'com.grindrapp.android.ui.home.HomeActivity.showTapsAndViewedMePopup.<anonymous> (HomeActivity.kt'
+        //   ???     - 'com.grindrapp.android.ui.home.HomeActivity.showTapsAndViewedMePopup.<anonymous>.<anonymous> (HomeActivity.kt'
+		//   "Il.w0" - 'com.grindrapp.android.ui.home.HomeActivity$subscribeForBoostRedeem$1'
+		// TODO find the showTapsAndViewedMePopup in 25.20.0
+        listOf("cd0.j2").forEach {
+            findClass(it).hook("invoke", HookStage.BEFORE) { param ->
+                param.setResult(null)
+            }
+        }
+    }
+}
