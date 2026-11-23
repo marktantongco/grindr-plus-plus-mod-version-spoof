@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900">
+  <rect width="1200" height="900" fill="#12100f"/>
+  <text x="600" y="50" text-anchor="middle" font-family="ui-monospace,monospace" font-size="26" fill="#fff">Bypass Decision Diagram</text>
+  <g font-family="sans-serif" font-size="13" fill="#f4ece6">
+    <rect x="480" y="90" width="240" height="60" rx="12" fill="#1d1613" stroke="#ff8a3d"/>
+    <text x="600" y="130" text-anchor="middle" fill="#ffb887">Feature broken?</text>
+    <rect x="200" y="220" width="260" height="60" rx="12" fill="#241a15" stroke="#33241c"/>
+    <text x="330" y="260" text-anchor="middle">Client gate on roles/flag?</text>
+    <rect x="740" y="220" width="260" height="60" rx="12" fill="#241a15" stroke="#33241c"/>
+    <text x="870" y="260" text-anchor="middle">Server 402 tiered_feature?</text>
+    <line x1="600" y1="150" x2="330" y2="220" stroke="#ff8a3d" stroke-width="2" marker-end="url(#a)"/>
+    <line x1="600" y1="150" x2="870" y2="220" stroke="#ff8a3d" stroke-width="2" marker-end="url(#a)"/>
+    <rect x="100" y="340" width="220" height="60" rx="12" fill="#1d1613" stroke="#33241c"/>
+    <text x="210" y="380" text-anchor="middle">Axis A — client belief</text>
+    <text x="210" y="400" text-anchor="middle" fill="#a08b7f">roles / feature_flag / experiment</text>
+    <rect x="460" y="340" width="280" height="60" rx="12" fill="#1d1613" stroke="#33241c"/>
+    <text x="600" y="380" text-anchor="middle">Axis B — server billing</text>
+    <text x="600" y="400" text-anchor="middle" fill="#a08b7f">region spoof → re-session</text>
+    <rect x="820" y="340" width="280" height="60" rx="12" fill="#1d1613" stroke="#33241c"/>
+    <text x="960" y="380" text-anchor="middle">Ban / Version gate?</text>
+    <line x1="330" y1="280" x2="210" y2="340" stroke="#ff8a3d" stroke-width="2" marker-end="url(#a)"/>
+    <line x1="870" y1="280" x2="600" y2="340" stroke="#ff8a3d" stroke-width="2" marker-end="url(#a)"/>
+    <line x1="870" y1="280" x2="960" y2="340" stroke="#ff8a3d" stroke-width="2" marker-end="url(#a)"/>
+    <rect x="100" y="480" width="220" height="60" rx="12" fill="#241a15" stroke="#ff8a3d"/>
+    <text x="210" y="520" text-anchor="middle" fill="#ffb887">Identity rotation</text>
+    <rect x="460" y="480" width="280" height="60" rx="12" fill="#241a15" stroke="#ff8a3d"/>
+    <text x="600" y="520" text-anchor="middle" fill="#ffb887">Spoof 26.24.0 / 195444</text>
+    <rect x="820" y="480" width="280" height="60" rx="12" fill="#241a15" stroke="#ff8a3d"/>
+    <text x="960" y="520" text-anchor="middle" fill="#ffb887">hookService forge</text>
+    <rect x="300" y="630" width="600" height="80" rx="16" fill="#1d1613" stroke="#33241c"/>
+    <text x="600" y="670" text-anchor="middle">Verify: log line + UI render → Works? → Record in RELEASE-TIMELINE.md</text>
+    <defs>
+      <marker id="a" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+        <polygon points="0 0,10 3.5,0 7" fill="#ff8a3d"/>
+      </marker>
+    </defs>
+  </g>
+</svg>

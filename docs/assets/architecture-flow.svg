@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800">
+  <rect width="1200" height="800" fill="#12100f"/>
+  <text x="600" y="60" text-anchor="middle" font-family="ui-monospace,monospace" font-size="28" fill="#fff">Architecture Flow — grindr-plus-plus-mt</text>
+  <g font-family="sans-serif" font-size="13" fill="#f4ece6">
+    <rect x="100" y="120" width="220" height="70" rx="12" fill="#1d1613" stroke="#33241c"/>
+    <text x="210" y="165" text-anchor="middle">Grindr UI</text>
+    <rect x="440" y="120" width="220" height="70" rx="12" fill="#1d1613" stroke="#33241c"/>
+    <text x="550" y="165" text-anchor="middle">ViewModel / Repo</text>
+    <rect x="780" y="120" width="220" height="70" rx="12" fill="#1d1613" stroke="#33241c"/>
+    <text x="890" y="165" text-anchor="middle">Retrofit Service</text>
+    <line x1="320" y1="155" x2="440" y2="155" stroke="#ff8a3d" stroke-width="2" marker-end="url(#arrow)"/>
+    <line x1="660" y1="155" x2="780" y2="155" stroke="#ff8a3d" stroke-width="2" marker-end="url(#arrow)"/>
+    <rect x="440" y="260" width="320" height="70" rx="12" fill="#241a15" stroke="#ff8a3d"/>
+    <text x="600" y="305" text-anchor="middle" fill="#ffb887">RetrofitUtils.hookService</text>
+    <line x1="890" y1="190" x2="600" y2="260" stroke="#ff8a3d" stroke-width="2" marker-end="url(#arrow)"/>
+    <rect x="260" y="400" width="180" height="70" rx="12" fill="#1d1613" stroke="#33241c"/>
+    <text x="350" y="445" text-anchor="middle">createSuccess / forge</text>
+    <rect x="560" y="400" width="180" height="70" rx="12" fill="#1d1613" stroke="#33241c"/>
+    <text x="650" y="445" text-anchor="middle">AssignmentsInterceptor</text>
+    <rect x="860" y="400" width="180" height="70" rx="12" fill="#1d1613" stroke="#33241c"/>
+    <text x="950" y="445" text-anchor="middle">OkHttp → Network</text>
+    <line x1="600" y1="330" x2="350" y2="400" stroke="#ff8a3d" stroke-width="2" marker-end="url(#arrow)"/>
+    <line x1="600" y1="330" x2="650" y2="400" stroke="#ff8a3d" stroke-width="2" marker-end="url(#arrow)"/>
+    <line x1="600" y1="330" x2="950" y2="400" stroke="#ff8a3d" stroke-width="2" marker-end="url(#arrow)"/>
+    <rect x="440" y="550" width="320" height="70" rx="12" fill="#241a15" stroke="#33241c"/>
+    <text x="600" y="595" text-anchor="middle">JWT experiments rewrite → /v8/sessions</text>
+    <line x1="650" y1="470" x2="600" y2="550" stroke="#ff8a3d" stroke-width="2" marker-end="url(#arrow)"/>
+    <rect x="260" y="660" width="680" height="70" rx="12" fill="#1d1613" stroke="#33241c"/>
+    <text x="600" y="705" text-anchor="middle">BanManagement • SignatureSpoofer • Version Spoof 26.24.0/195444</text>
+    <defs>
+      <marker id="arrow" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+        <polygon points="0 0,10 3.5,0 7" fill="#ff8a3d"/>
+      </marker>
+    </defs>
+  </g>
+  <text x="600" y="770" text-anchor="middle" font-size="12" fill="#8d7a70">Client belief axis vs Server billing axis • GPL-3.0</text>
+</svg>
