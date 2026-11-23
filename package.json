@@ -1,0 +1,5 @@
+{
+  "name": "grindr-plus-plus-mt-site",
+  "private": true,
+  "scripts": { "dev": "npx serve docs" }
+}
