@@ -1,0 +1,21 @@
+import { chromium } from 'playwright';
+const b = await chromium.launch({ args: ['--enable-unsafe-swiftshader'] });
+const p = await b.newPage({ viewport: { width: 390, height: 844 } });
+await p.goto('http://localhost:3100/', { waitUntil: 'domcontentloaded' });
+await p.waitForTimeout(600);
+const r = await p.evaluate(() => {
+  const h = document.querySelector('.hero');
+  const fig = document.querySelector('.hero__figure');
+  const log = [];
+  const snap = (tag) => log.push([tag, getComputedStyle(h).paddingBlock, getComputedStyle(h).gridTemplateRows, Math.round(fig.getBoundingClientRect().height)]);
+  snap('base');
+  h.style.paddingBlock = '64px 96px';
+  snap('pad64/96');
+  fig.style.maxHeight = 'none';
+  snap('nofigmax');
+  fig.style.aspectRatio = 'auto';
+  snap('noAR');
+  return log;
+});
+console.log(JSON.stringify(r, null, 1));
+await b.close();

@@ -1,0 +1,21 @@
+import { chromium } from 'playwright';
+const b = await chromium.launch({ args: ['--enable-unsafe-swiftshader'] });
+const p = await b.newPage({ viewport: { width: 390, height: 844 } });
+await p.goto('http://localhost:3100/', { waitUntil: 'domcontentloaded' });
+await p.waitForTimeout(700);
+const r = await p.evaluate(() => {
+  const h = document.querySelector('.hero');
+  const fig = document.querySelector('.hero__figure');
+  const cs = getComputedStyle(h), fs = getComputedStyle(fig);
+  const log = [['computed', cs.gridTemplateRows, cs.paddingBlock, fs.aspectRatio, fs.maxHeight, fs.height, fs.minHeight, Math.round(fig.getBoundingClientRect().height)]];
+  fig.style.minHeight = '200px';
+  log.push(['minH200', cs.gridTemplateRows, Math.round(fig.getBoundingClientRect().height), Math.round(h.getBoundingClientRect().height)]);
+  fig.style.minHeight = '0px';
+  fig.style.height = 'auto';
+  log.push(['hAuto', getComputedStyle(h).gridTemplateRows, Math.round(fig.getBoundingClientRect().height)]);
+  fig.style.aspectRatio = '16 / 10';
+  log.push(['ar16', getComputedStyle(h).gridTemplateRows, Math.round(fig.getBoundingClientRect().height)]);
+  return log;
+});
+console.log(JSON.stringify(r, null, 1));
+await b.close();

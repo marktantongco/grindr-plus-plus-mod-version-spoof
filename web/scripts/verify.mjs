@@ -1,0 +1,302 @@
+// Independent acceptance runner. Writes /tmp/opencode/verify/report.json.
+// Reproduces ACCEPTANCE_PLAN items that are machine-checkable.
+
+import { chromium } from "playwright";
+import { mkdirSync, writeFileSync } from "node:fs";
+
+const OUT = "/tmp/opencode/verify";
+mkdirSync(OUT, { recursive: true });
+const URL = "http://localhost:3100/";
+const results = [];
+const rec = (id, pass, detail) => results.push({ id, pass, detail });
+
+const viewports = [
+  ["V1", 390, 844],
+  ["V2", 768, 1024],
+  ["V3", 1280, 800],
+  ["V4", 1440, 900],
+  ["V5", 1920, 1080],
+  ["V0", 320, 720],
+];
+
+const browser = await chromium.launch({ args: ["--enable-webgl", "--use-gl=swiftshader"] });
+
+async function shot(name, w, h, opts = {}) {
+  const ctx = await browser.newContext({
+    viewport: { width: w, height: h },
+    reducedMotion: opts.reduced ? "reduce" : "no-preference",
+    hasTouch: w < 640,
+  });
+  const page = await ctx.newPage();
+  const errors = [];
+  page.on("pageerror", (e) => errors.push(String(e)));
+  await page.goto(URL, { waitUntil: "networkidle" });
+  await page.waitForTimeout(1200);
+  const file = `${OUT}/${name}.png`;
+  await page.screenshot({ path: file });
+  return { ctx, page, errors, file };
+}
+
+// --- responsive determinism (item 6) ---
+for (const [id, w, h] of viewports) {
+  const { ctx, page, errors } = await shot(id, w, h);
+  const m = await page.evaluate(() => ({
+    sw: document.documentElement.scrollWidth,
+    cw: document.documentElement.clientWidth,
+    cta: (() => {
+      const a = document.querySelector(".hero__actions .btn--primary");
+      if (!a) return null;
+      const r = a.getBoundingClientRect();
+      return { l: r.left, r: r.right, w: r.width, h: r.height };
+    })(),
+    small: Array.from(document.querySelectorAll("a,button")).filter((el) => {
+      const r = el.getBoundingClientRect();
+      return r.width > 0 && (r.height < 44 || r.width < 44);
+    }).map((el) => `${el.className || el.tagName}:${Math.round(el.getBoundingClientRect().height)}`),
+    wraps: Array.from(document.querySelectorAll(".masthead__nav a, .btn, .masthead__status")).filter(
+      (el) => el.getBoundingClientRect().height > 56,
+    ).length,
+  }));
+  rec(`A34-hscroll-${id}`, m.sw <= m.cw, `scrollWidth ${m.sw} <= clientWidth ${m.cw}`);
+  rec(`A35-cta-inview-${id}`, !!m.cta && m.cta.l >= 0 && m.cta.r <= w, m.cta ? `cta ${Math.round(m.cta.l)}..${Math.round(m.cta.r)} of ${w}` : "cta missing");
+  rec(`A36-tap44-${id}`, m.small.length === 0, m.small.join(", ") || "all >=44");
+  rec(`A27-wrap-${id}`, m.wraps === 0, `${m.wraps} wrapped nav/cta`);
+  rec(`A38-pagerr-${id}`, errors.length === 0, errors.join(" | ") || "none");
+  await ctx.close();
+}
+
+// --- fold (A22) + hero padding (A22) + void (A25) at V3/V5 ---
+for (const [id, w, h] of [["V3", 1280, 800], ["V5", 1920, 1080]]) {
+  const { ctx, page } = await shot(`fold-${id}`, w, h);
+  const fold = await page.evaluate(() => {
+    const vis = (sel) => {
+      const el = document.querySelector(sel);
+      if (!el) return false;
+      const r = el.getBoundingClientRect();
+      return r.top >= 0 && r.bottom <= window.innerHeight && r.width > 0;
+    };
+    const hero = document.querySelector(".hero");
+    const cs = getComputedStyle(hero);
+    const r = hero.getBoundingClientRect();
+    const padTop = parseFloat(cs.paddingTop);
+    const padBottom = parseFloat(cs.paddingBottom);
+    // band emptiness at V5: scan rows for ink coverage
+    const rows = [];
+    const H = window.innerHeight;
+    const bands = 10;
+    return {
+      eyebrow: vis(".hero .label"),
+      h1: vis("h1"),
+      lede: vis(".hero .prose"),
+      cta: vis(".hero__actions .btn--primary"),
+      padRatio: padBottom / padTop,
+      heroH: r.height,
+      bands,
+      H,
+    };
+  });
+  rec(`A22-fold-${id}`, fold.eyebrow && fold.h1 && fold.lede && fold.cta, JSON.stringify({ e: fold.eyebrow, h: fold.h1, l: fold.lede, c: fold.cta }));
+  rec(`A22-pad-${id}`, fold.padRatio >= 1.3, `bottom/top = ${fold.padRatio.toFixed(2)}`);
+
+  // A25 void gate. Definition, so the number is reproducible and not eyeballed:
+  // 10 horizontal bands over the hero's content span (masthead excluded as chrome, the
+  // hero's own bottom padding excluded as padding). A band's emptiness is the horizontal
+  // fraction NOT covered by any content box. 1240px --measure-page is a pinned decision
+  // (D-P4-4), so the gutter beyond it is not counted as void either.
+  const voidRes = await page.evaluate(() => {
+    const hero = document.querySelector('.hero');
+    const cs = getComputedStyle(hero);
+    const hr = hero.getBoundingClientRect();
+    const top = hr.top + parseFloat(cs.paddingTop);
+    const bot = hr.bottom - parseFloat(cs.paddingBottom);
+    const track = hero.getBoundingClientRect();
+    const W = track.width;
+    const left = track.left;
+    const boxes = Array.from(
+      document.querySelectorAll('.hero__copy > .label, h1, .hero__copy .prose, .hero__actions .btn, .hero__figure, .hero__meta'),
+    )
+      .map((el) => el.getBoundingClientRect())
+      .filter((r) => r.width > 0 && r.height > 0);
+    const bands = 10;
+    const bandH = (bot - top) / bands;
+    const out = [];
+    for (let i = 0; i < bands; i += 1) {
+      const bt = top + i * bandH;
+      const bb = bt + bandH;
+      const spans = boxes
+        .filter((r) => r.top < bb && r.bottom > bt)
+        .map((r) => [Math.max(left, r.left), Math.min(left + W, r.right)])
+        .filter(([a, b]) => b > a)
+        .sort((a, b) => a[0] - b[0]);
+      let cov = 0;
+      let cur = [0, 0];
+      for (const s of spans) {
+        if (s[0] > cur[1]) {
+          cov += cur[1] - cur[0];
+          cur = [s[0], s[1]];
+        } else {
+          cur[1] = Math.max(cur[1], s[1]);
+        }
+      }
+      cov += cur[1] - cur[0];
+      out.push(1 - cov / W);
+    }
+    return out;
+  });
+  const worstVoid = Math.max(...voidRes);
+  rec(
+    `A25-void-${id}`,
+    worstVoid <= 0.4,
+    `worst band ${(worstVoid * 100).toFixed(1)}% empty (limit 40%), bands ${voidRes.map((v) => Math.round(v * 100)).join('/')}`,
+  );
+  await ctx.close();
+}
+
+// --- accent coverage (A23) + bg colour (A24) ---
+for (const [id, w, h] of viewports) {
+  const { ctx, page } = await shot(`accent-${id}`, w, h);
+  const cov = await page.evaluate(() => {
+    const c = document.createElement("canvas");
+    const img = document.querySelector("img");
+    void img;
+    return null;
+  });
+  void cov;
+  const buf = await page.screenshot({ path: `${OUT}/accent-src-${id}.png` });
+  const ratio = await page.evaluate(async (b64) => {
+    const img = new Image();
+    img.src = "data:image/png;base64," + b64;
+    await img.decode();
+    const c = document.createElement("canvas");
+    c.width = img.width; c.height = img.height;
+    const x = c.getContext("2d");
+    x.drawImage(img, 0, 0);
+    const d = x.getImageData(0, 0, c.width, c.height).data;
+    let accent = 0, total = 0;
+    for (let i = 0; i < d.length; i += 4) {
+      total++;
+      const r = d[i], g = d[i + 1], bl = d[i + 2];
+      // accent family: strong red dominance with mid green
+      if (r > 180 && g > 90 && g < 200 && bl < 160) accent++;
+    }
+    return (accent / total) * 100;
+  }, buf.toString("base64"));
+  rec(`A23-accent-${id}`, ratio <= 5, `${ratio.toFixed(2)}% accent pixels`);
+  const bg = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+  rec(`A24-bg-${id}`, bg === "rgb(18, 16, 15)", bg);
+  await ctx.close();
+}
+
+// --- keyboard order (A40) ---
+{
+  const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  const page = await ctx.newPage();
+  await page.goto(URL, { waitUntil: "networkidle" });
+  const order = [];
+  for (let i = 0; i < 12; i++) {
+    await page.keyboard.press("Tab");
+    order.push(
+      await page.evaluate(() => {
+        const el = document.activeElement;
+        if (!el) return "none";
+        const ring = getComputedStyle(el).outlineStyle;
+        return `${el.tagName}:${(el.textContent || "").trim().slice(0, 18)}:${ring}`;
+      }),
+    );
+  }
+  rec("A40-tab-order", order[0].startsWith("A:") && order[0].includes("Skip"), order.join(" > "));
+  rec("A40-rings", order.filter((o) => o.endsWith(":solid")).length >= 10, `${order.filter((o) => o.endsWith(":solid")).length}/12 stops have a ring`);
+  // A41 skip link moves focus to main
+  await page.goto(URL, { waitUntil: "networkidle" });
+  await page.keyboard.press("Tab");
+  await page.keyboard.press("Enter");
+  await page.waitForTimeout(200);
+  const focused = await page.evaluate(() => document.activeElement?.id);
+  rec("A41-skip-target", focused === "main", `focus -> #${focused}`);
+  await ctx.close();
+}
+
+// --- reduced motion (A29/A30) ---
+{
+  const { ctx, page } = await shot("reduced", 1440, 900, { reduced: true });
+  const st = await page.evaluate(() => ({
+    states: Array.from(document.querySelectorAll(".segment")).map((e) => e.dataset.state),
+    smoother: document.querySelectorAll("#smooth-wrapper > .scroll-content, #smooth-wrapper").length,
+    posterVisible: getComputedStyle(document.querySelector(".hero__poster")).opacity,
+  }));
+  rec("A29-reduced-locked", st.states.every((s) => s === "locked"), st.states.join(","));
+  await ctx.close();
+}
+
+// --- WebGL off (A38/A39) ---
+{
+  const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  const page = await ctx.newPage();
+  const errs = [];
+  page.on("pageerror", (e) => errs.push(String(e)));
+  await page.addInitScript(() => {
+    const orig = HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext = function (t, o) {
+      if (String(t).startsWith("webgl")) return null;
+      return orig.call(this, t, o);
+    };
+  });
+  await page.goto(URL, { waitUntil: "networkidle" });
+  await page.waitForTimeout(900);
+  const st = await page.evaluate(() => ({
+    mode: document.querySelector(".hero__figure")?.dataset.canvas,
+    textPainted: !!document.querySelector("h1")?.textContent,
+    posterOpacity: getComputedStyle(document.querySelector(".hero__poster")).opacity,
+    svg: !!document.querySelector(".hero__poster svg"),
+  }));
+  rec("A38-fallback", st.mode === "failed" && st.svg && st.textPainted, JSON.stringify(st));
+  rec("A38-noerr", errs.length === 0, errs.join(" | ") || "none");
+  await page.screenshot({ path: `${OUT}/nogl.png` });
+  await ctx.close();
+}
+
+// --- live canvas present (A28) ---
+{
+  const { ctx, page } = await shot("live", 1440, 900);
+  const st = await page.evaluate(() => ({
+    mode: document.querySelector(".hero__figure")?.dataset.canvas,
+    canvas: !!document.querySelector(".hero__canvas canvas"),
+  }));
+  rec("A28-canvas-live", st.mode === "live" && st.canvas, JSON.stringify(st));
+  await ctx.close();
+}
+
+// --- draw calls (A36) ---
+{
+  const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  const page = await ctx.newPage();
+  await page.addInitScript(() => {
+    window.__dc = 0;
+    const patch = (proto) => {
+      for (const m of ["drawElements", "drawArrays", "drawElementsInstanced", "drawArraysInstanced"]) {
+        const orig = proto[m];
+        if (!orig) continue;
+        proto[m] = function (...a) {
+          window.__dc++;
+          return orig.apply(this, a);
+        };
+      }
+    };
+    patch(WebGL2RenderingContext.prototype);
+    patch(WebGLRenderingContext.prototype);
+    const raf = window.requestAnimationFrame;
+    window.requestAnimationFrame = (cb) => raf((t) => { window.__dc = 0; cb(t); });
+  });
+  await page.goto(URL, { waitUntil: "networkidle" });
+  await page.waitForTimeout(1500);
+  const dc = await page.evaluate(() => window.__dc);
+  rec("A36-drawcalls", dc > 0 && dc < 100, `${dc} draw calls in one frame`);
+  await ctx.close();
+}
+
+await browser.close();
+const fails = results.filter((r) => !r.pass);
+writeFileSync(`${OUT}/report.json`, JSON.stringify({ total: results.length, fails: fails.length, results }, null, 2));
+console.log(`total ${results.length}  fails ${fails.length}`);
+for (const f of fails) console.log(`FAIL ${f.id}  ${f.detail}`);
+process.exit(fails.length === 0 ? 0 : 1);

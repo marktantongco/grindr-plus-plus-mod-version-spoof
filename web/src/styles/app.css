@@ -1,0 +1,1047 @@
+/* Base + component CSS. Consumes tokens only — no hex outside tokens.css (G48). */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--color-bg);
+  color-scheme: dark;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: var(--size-body);
+  line-height: var(--lh-body);
+  overflow-x: clip; /* G34 */
+}
+
+img,
+canvas {
+  display: block;
+  max-width: 100%;
+}
+
+a {
+  color: var(--color-ink);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color var(--dur-micro) var(--ease), color var(--dur-micro) var(--ease);
+}
+
+a:hover {
+  border-bottom-color: var(--color-accent);
+}
+
+/* body-copy links carry their own 44px box (A36) */
+.prose a,
+.step__body a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--size-control);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/* ---------- utilities ---------- */
+
+.page {
+  width: 100%;
+  max-width: var(--measure-page);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.label {
+  font-family: var(--font-display);
+  font-size: var(--size-label);
+  font-weight: 500;
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--color-muted);
+  margin: 0;
+}
+
+display,
+.display {
+  display: block;
+}
+
+.display {
+  font-family: var(--font-display);
+  font-size: var(--size-display);
+  font-weight: 700;
+  line-height: var(--lh-display);
+  letter-spacing: -0.045em;
+  /* no word-spacing: it is applied BEFORE the comma/period, so the punctuation detaches.
+     the fallback face's wide sidebearings are absorbed by the tracking instead. */
+  text-wrap: balance; /* nowrap overflowed the 505px column; balance keeps 2 even lines */
+  overflow-wrap: anywhere; /* G51 */
+  min-width: 0;
+  margin: 0;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: var(--size-title);
+  font-weight: 600;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.prose {
+  max-width: var(--measure-body);
+  color: var(--color-muted);
+  margin: 0;
+}
+
+.num {
+  font-variant-numeric: tabular-nums; /* D-P3-3 */
+}
+
+/* ---------- skip link (P-PR-46) ---------- */
+
+.skip {
+  position: absolute;
+  left: var(--space-4);
+  top: var(--space-4);
+  z-index: 100;
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--size-control);
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-panel-raised);
+  border: 1px solid var(--color-rule-strong);
+  border-radius: var(--radius-control);
+  font-family: var(--font-display);
+  font-size: var(--size-label);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  transform: translateY(calc(-100% - var(--space-4)));
+  transition: transform var(--dur-micro) var(--ease);
+}
+
+.skip:focus-visible {
+  transform: none;
+}
+
+#main:focus,
+#main:focus-visible {
+  outline: none;
+}
+
+/* ---------- masthead (P-FN-08) ---------- */
+
+.masthead {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  height: var(--size-masthead);
+  background: color-mix(in oklab, var(--color-bg) 88%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid transparent;
+  transition: border-color var(--dur-micro) var(--ease);
+}
+
+.masthead[data-scrolled="true"] {
+  border-bottom-color: var(--color-rule-strong);
+}
+
+.masthead__inner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  height: 100%;
+  width: 100%;
+  max-width: var(--measure-page);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+  min-width: 0;
+}
+
+.lockup,
+.masthead__status,
+.masthead__nav {
+  min-width: 0;
+}
+
+.lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 44px;
+  border-bottom: none;
+}
+
+.lockup__mark {
+  width: 24px;
+  height: 24px;
+  flex: none;
+  color: var(--color-accent);
+}
+
+.lockup__word {
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.masthead__status {
+  font-family: var(--font-display);
+  font-size: var(--size-label);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--color-muted);
+  white-space: nowrap;
+}
+
+.masthead__nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--space-4);
+  margin-inline-start: auto;
+  min-width: 0;
+}
+
+@media (max-width: 899px) {
+  .masthead {
+    height: auto;
+    min-height: var(--size-masthead);
+  }
+  .masthead__inner {
+    flex-wrap: wrap;
+    padding-block: var(--space-2);
+    row-gap: 0;
+  }
+  .masthead__status {
+    display: none;
+  }
+  .masthead__nav {
+    order: 3;
+    width: 100%;
+    margin-inline-start: 0;
+  }
+  .masthead__inner > .btn {
+    margin-inline-start: auto;
+  }
+}
+
+@media (max-width: 560px) {
+  /* 16px prose costs 124px and the panel then starts below the fold; 0.94rem keeps
+     the D-P3-1 body floor's readability while buying back a third of it */
+  .hero__copy .prose {
+    font-size: 0.94rem;
+    line-height: 1.5;
+  }
+  .masthead__nav a {
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+  }
+  .masthead__nav {
+    gap: 0 var(--space-3);
+  }
+  /* one accent fill above the fold at the narrowest widths (A23 accent budget) */
+  .hero__actions .btn--primary {
+    background: var(--color-panel);
+    color: var(--color-ink);
+    border-color: var(--color-rule-strong);
+  }
+  .hero__actions .btn--primary:hover {
+    background: var(--color-panel-raised);
+    border-color: var(--color-rule-strong);
+    border-bottom-color: var(--color-rule-strong);
+  }
+  .hero__actions .btn--primary:active {
+    background: var(--color-panel);
+  }
+}
+
+@media (max-width: 420px) {
+  .btn {
+    padding-inline: var(--space-3);
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+  }
+  /* 320: label + two CTAs cannot share a 280px line, so the copy row budget is the
+     binding constraint. Trim the label to one line and stack the CTAs deliberately
+     rather than letting flex-wrap produce an accidental 96px row. */
+  .hero__copy .label {
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+  }
+  .hero__actions {
+    gap: var(--space-2) var(--space-3);
+  }
+  .hero__actions .btn,
+  .hero__actions > a:not(.btn) {
+    flex: 1 1 100%;
+  }
+}
+
+.masthead__nav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-family: var(--font-display);
+  font-size: var(--size-label);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--color-muted);
+  white-space: nowrap;
+}
+
+.masthead__nav a:hover {
+  color: var(--color-ink);
+  border-bottom-color: var(--color-accent);
+}
+
+/* ---------- buttons / links (C-10) ---------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--size-control);
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  font-family: var(--font-display);
+  font-size: var(--size-label);
+  font-weight: 600;
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: background-color var(--dur-micro) var(--ease), border-color var(--dur-micro) var(--ease);
+}
+
+.btn--primary {
+  background: var(--color-accent);
+  color: var(--color-accent-ink);
+  border-color: var(--color-accent);
+}
+
+.btn--primary:hover {
+  background: var(--color-accent-light);
+  border-color: var(--color-accent-light);
+  border-bottom-color: var(--color-accent-light);
+}
+
+.btn--primary:active {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+.btn--secondary {
+  background: var(--color-panel);
+  color: var(--color-ink);
+  border-color: var(--color-rule-strong);
+}
+
+.btn--secondary:hover {
+  background: var(--color-panel-raised);
+  border-bottom-color: var(--color-rule-strong);
+}
+
+.btn--secondary:active {
+  background: var(--color-panel);
+}
+
+.btn:disabled,
+.btn[aria-disabled="true"] {
+  background: var(--color-panel-raised);
+  color: var(--color-ink-dim);
+  border-color: var(--color-rule);
+  cursor: not-allowed;
+}
+
+/* ---------- plates ---------- */
+
+.plate {
+  background: var(--color-panel);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-panel);
+}
+
+/* ---------- sections ---------- */
+
+.section {
+  position: relative;
+}
+
+.section__inner {
+  width: 100%;
+  max-width: var(--measure-page);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+/* hero (P-FN-09) */
+
+.hero {
+  /* owns the fold: content must fill the first screen or a void opens (A25/GS5) */
+  /* explicit height, not min-height: a min-height grid sizes rows to content and
+     drops the slack at the bottom, which is exactly the void A25/GS5 catches */
+  height: calc(100svh - var(--size-masthead)); /* D-P4-9, G6 */
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  /* copy is fixed, the figure takes the remaining fold. 1fr on a 844px phone
+     collapsed the figure to a 160px sliver cut by the fold (A25/GS5); an
+     auto-sized row lets the 34svh cap decide instead of the leftover space. */
+  grid-template-rows: auto min(34svh, 300px);
+  align-content: stretch;
+  padding-block: var(--space-9) var(--space-11); /* D-P4-2, G44 bottom > 1.3x top */
+  gap: var(--space-6);
+}
+
+.hero__copy {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  /* space-between already distributes the slack; a fixed 32px gap on top of it left a
+     109px bare strip between the h1 and the lede, which was the last >40% band (A25) */
+  row-gap: 0;
+  /* the copy column is 559px: rows must fill it, not sit as short islands in it.
+     space-between parked all slack in two gaps (59% empty bands); auto rows let the
+     grid distribute it instead. */
+  grid-template-columns: minmax(0, 1fr);
+  grid-auto-rows: auto;
+  align-content: stretch;
+  justify-items: stretch; /* the rule under the label and above the meta needs full width */
+  padding-top: var(--space-6);
+}
+
+/* the label and the meta each carry a rule across the copy column, so the top and
+   bottom bands of the fold hold real ink instead of one short line (A25) */
+.hero__copy > .label {
+  border-bottom: 1px solid var(--color-rule);
+  padding-bottom: var(--space-3);
+}
+
+/* the h1 row carries a little bottom breathing room so the lede does not butt against
+   the headline now that rows are stretched (the slack is still distributed, not parked) */
+.hero__copy > .display {
+  padding-bottom: var(--space-3);
+}
+
+.hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-5);
+  /* a bare 146px button row left 74% of the 559px copy column empty (A25 bands 7-8).
+     The secondary link takes the rest of the line, so the row carries real width.
+     No rule here: the meta rule below already closes the column, and a third rule in
+     the lower half read as clutter. */
+  padding-bottom: var(--space-4);
+}
+
+/* the primary action fills the row and the secondary link sits at its far end, so the
+   row spans the whole 559px column instead of leaving 47% of it bare (A25 bands 6-7) */
+.hero__actions > .btn {
+  flex: 1 1 auto;
+  justify-content: center;
+}
+
+.hero__actions > a:not(.btn) {
+  flex: 0 0 auto;
+  justify-content: flex-end;
+}
+
+.hero__actions > a:not(.btn) {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--size-control);
+}
+
+.hero__meta {
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  color: var(--color-muted);
+  max-width: none; /* 52ch capped it short of the column, so the bottom bands stayed empty (A25) */
+  margin: 0;
+  border-top: 1px solid var(--color-rule);
+  padding-top: var(--space-3);
+}
+
+.hero__figure {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  /* 52svh is taller than the fold on phones once masthead+copy are subtracted;
+     the panel is capped at 34svh so it can never outgrow its grid track.
+     On tall desktop folds the 600px cap left the last 216px of the fold empty
+     (A25 100% empty bands 8-9), so the cap follows the fold height instead. */
+  max-height: max(34svh, min(600px, calc(100svh - 420px)));
+  margin-inline: auto;
+  width: 100%;
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-panel);
+  overflow: hidden;
+  background: var(--color-panel);
+}
+
+.hero__poster,
+.hero__canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.hero__poster {
+  object-fit: cover;
+  transition: opacity var(--dur-reveal) var(--ease);
+}
+
+.hero__figure[data-canvas="live"] .hero__poster {
+  opacity: 0;
+}
+
+.hero__figure[data-canvas="failed"] .hero__poster {
+  opacity: 1;
+}
+
+/* narrow folds: the hero padding and the figure track must both shrink, otherwise
+   96+160 of padding plus a 287px panel overflow an 844px screen (A25/GS5) */
+@media (max-width: 899px) {
+  .hero {
+    padding-block: var(--space-8) var(--space-9); /* 64/96 = 1.5x, D-P4-2 ratio kept */
+    gap: var(--space-5);
+    /* a 1fr track honours the aspect-ratio minimum contribution (44px), so the row is
+       a fixed min(34svh,300px) and the panel simply fills it */
+    grid-template-rows: auto min(34svh, 300px);
+  }
+  .hero__copy {
+    padding-top: var(--space-4);
+  }
+  .hero__figure {
+    aspect-ratio: auto;
+    max-height: none;
+    height: 100%;
+    min-height: 0;
+  }
+}
+
+/* short folds (700px phones, landscape): the block padding alone eats 256px of a 636px
+   hero; collapse to 48/80 = 1.67x so the D-P4-2 bottom>1.3x top ratio survives */
+@media (max-height: 760px) {
+  .hero {
+    padding-block: var(--space-7) var(--space-9);
+    gap: var(--space-4);
+    /* the track must shrink with the fold, not just the padding: at 700px height the
+       34svh panel + 128px padding + copy still overhung by 72px (A25/GS5) */
+    grid-template-rows: auto min(28svh, 240px);
+  }
+  .hero__actions {
+    column-gap: var(--space-3);
+  }
+  .hero__copy .prose {
+    font-size: 0.94rem;
+    line-height: 1.5;
+  }
+}
+
+/* very short folds (320x700, 360x640): copy has to give ground too, or the
+   panel is pushed under the fold no matter how small the track gets */
+@media (max-height: 700px) {
+  .hero {
+    padding-block: var(--space-6) var(--space-7); /* 32/48 = 1.5x, D-P4-2 kept */
+    grid-template-rows: auto min(23svh, 190px);
+  }
+  .hero__copy .prose {
+    font-size: 0.88rem;
+    line-height: 1.45;
+  }
+}
+
+/* stack */
+
+.stack {
+  padding-block: var(--space-10);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-8);
+  align-content: center;
+  min-width: 0;
+}
+
+.stack > * {
+  min-width: 0;
+}
+
+.stack__slabs {
+  display: grid;
+  gap: var(--space-3);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.stack__slab {
+  display: flex;
+  flex-wrap: wrap;
+  min-width: 0;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  background: var(--color-panel);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-panel);
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+}
+
+.stack__slab:nth-child(2) {
+  margin-inline-start: var(--space-5);
+}
+
+.stack__slab:nth-child(3) {
+  margin-inline-start: var(--space-8);
+}
+
+.stack__slab small {
+  color: var(--color-muted);
+  font-size: 0.75rem;
+  font-family: var(--font-body);
+}
+
+/* void */
+
+.void {
+  min-height: 150svh; /* D-P4-2 breathing void before the peak */
+}
+
+/* orbital stage (C-3, no-preset) */
+
+.stage {
+  position: relative;
+  min-height: 200svh;
+  padding-block: var(--space-9);
+}
+
+.stage__sticky {
+  position: sticky;
+  top: var(--size-masthead);
+  min-height: calc(100svh - var(--size-masthead));
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-content: center;
+  gap: var(--space-8);
+}
+
+.stage__list {
+  display: grid;
+  gap: var(--space-4);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.segment {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-4) 0 var(--space-4) var(--space-5);
+  border-left: 2px solid var(--color-rule);
+  transition: border-color var(--dur-micro) var(--ease), color var(--dur-micro) var(--ease);
+}
+
+.segment[data-state="locked"] {
+  border-left-color: var(--color-accent);
+}
+
+.segment[data-state="dim"] {
+  color: var(--color-ink-dim);
+}
+
+.segment[data-state="passed"] {
+  color: var(--color-ink-dim);
+}
+
+.segment__term {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.segment__body {
+  color: var(--color-muted);
+  margin: 0;
+  max-width: 46ch;
+  font-size: 0.95rem;
+}
+
+.segment__state {
+  font-family: var(--font-display);
+  font-size: var(--size-label);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--color-muted);
+  margin: 0;
+}
+
+.limits {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  align-items: baseline;
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-rule);
+  font-size: 0.85rem;
+  color: var(--color-muted);
+  margin: 0;
+}
+
+.limits__key {
+  font-family: var(--font-display);
+  font-size: var(--size-label);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--color-ink-dim);
+}
+
+/* performance (C-4, P-PR-68) */
+
+.perf {
+  padding-block: var(--space-10);
+  display: grid;
+  gap: var(--space-8);
+  align-content: center;
+}
+
+.perf__grid {
+  display: grid;
+  gap: var(--space-5);
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.stat {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-5);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-panel);
+  background: var(--color-panel);
+}
+
+.stat__def {
+  font-family: var(--font-display);
+  font-size: var(--size-label);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--color-muted);
+  margin: 0;
+}
+
+.stat__value {
+  font-family: var(--font-display);
+  font-size: clamp(1.9rem, 3.4vw, 2.9rem);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  margin: 0;
+  line-height: 1.05;
+}
+
+.stat__cond {
+  font-size: 0.82rem;
+  color: var(--color-muted);
+  margin: 0;
+}
+
+.stat--measuring .stat__value {
+  color: var(--color-ink-dim);
+}
+
+.lamp {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-pill);
+  background: var(--color-rule-strong);
+  margin-inline-end: var(--space-2);
+}
+
+.perf__note {
+  font-size: 0.85rem;
+  color: var(--color-muted);
+  margin: 0;
+}
+
+/* features drawer (C-5) */
+
+.features {
+  padding-block: var(--space-9);
+  display: grid;
+  gap: var(--space-6);
+}
+
+.features__track {
+  display: grid;
+  gap: var(--space-4);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.feature {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-5);
+  background: var(--color-panel);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-panel);
+}
+
+.feature__name {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.feature__body {
+  font-size: 0.9rem;
+  color: var(--color-muted);
+  margin: 0;
+}
+
+.feature__state {
+  font-family: var(--font-display);
+  font-size: var(--size-label);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--color-ink-dim);
+  margin: 0;
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--color-rule);
+}
+
+/* install (C-6, P-FN-07) */
+
+.install {
+  padding-block: var(--space-9);
+  display: grid;
+  gap: var(--space-6);
+}
+
+.steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-2);
+}
+
+.step {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-panel);
+  position: relative;
+}
+
+.step + .step::before {
+  content: "";
+  position: absolute;
+  top: calc(-1 * var(--space-1));
+  inset-inline: var(--space-4);
+  border-top: 1px solid var(--color-rule);
+}
+
+.step__head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.step__n {
+  color: var(--color-accent);
+  font-size: var(--size-label);
+  letter-spacing: var(--track-label);
+}
+
+.step__body {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--color-muted);
+  padding-inline-start: var(--space-6);
+}
+
+.step code {
+  font-family: var(--font-display);
+  font-size: 0.82rem;
+  color: var(--color-ink-dim);
+  overflow-x: auto;
+  display: block;
+  white-space: pre;
+}
+
+/* credit / footer (C-8, P-FN-10) */
+
+.credit {
+  padding-block: var(--space-10) var(--space-8);
+  min-width: 0;
+  border-top: 1px solid var(--color-rule-strong);
+  display: grid;
+  gap: var(--space-8);
+}
+
+.credit__brand {
+  display: grid;
+  gap: var(--space-4);
+  align-content: start;
+}
+
+.credit__lineage {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-2);
+  font-size: 0.88rem;
+  color: var(--color-muted);
+}
+
+.credit__lineage a {
+  color: var(--color-ink-dim);
+}
+
+.credit__licence {
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  color: var(--color-ink);
+  margin: 0;
+}
+
+.credit__links {
+  display: grid;
+  gap: var(--space-2);
+  align-content: start;
+}
+
+.credit__links a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-family: var(--font-display);
+  font-size: var(--size-label);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--color-ink-dim);
+}
+
+.credit__links a:hover {
+  color: var(--color-ink);
+}
+
+.meta {
+  grid-column: 1 / -1;
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-rule);
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  color: var(--color-muted);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-5);
+  margin: 0;
+}
+
+/* reduced-motion notice (D-P4-7) */
+
+.rm-notice {
+  font-family: var(--font-display);
+  font-size: var(--size-label);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--color-muted);
+  margin: 0;
+}
+
+/* ---------- breakpoints (authored, D-P3-6 / VQC §4) ---------- */
+
+@media (min-width: 640px) {
+  .perf__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .features__track {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 900px) {
+  .hero {
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+    /* stretch both cells to the fold; aspect-ratio is disabled so the row height,
+       not the column width, decides the figure (A25/GS5) */
+    grid-template-rows: minmax(0, 1fr);
+    align-items: stretch;
+  }
+  .hero__copy {
+    /* stretch, not center or space-between: centring left the top and bottom bands
+       59% empty, and space-between parked the same 59% in two internal gaps (A25).
+       Stretch distributes the slack across every row, so no band is left bare. */
+    align-content: stretch;
+    grid-auto-rows: 1fr;
+    padding-block: 0;
+  }
+  .hero__figure {
+    aspect-ratio: auto; /* beats the base 16/10 that otherwise caps height at width*0.625 */
+    /* the panel spans the whole hero row. A 600px cap left the bottom 216px of a 1080
+       fold empty (A25), and a shorter panel also left the top and bottom bands carried
+       by the copy column alone, where the single-column floor is 54.9% empty. */
+    max-height: none;
+    height: 100%;
+    align-self: stretch;
+    margin-block: 0;
+    min-height: 0;
+  }
+  .stack {
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    align-items: center;
+  }
+  .stage__sticky {
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+    align-items: center;
+  }
+  .perf__grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .features__track {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .install {
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    align-items: start;
+  }
+  .credit {
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+    align-items: start;
+  }
+}
+
+@media (min-width: 1200px) {
+  .features__track {
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+  }
+  .feature {
+    padding: var(--space-4) var(--space-3);
+  }
+  .feature__name {
+    font-size: 0.85rem;
+  }
+}

@@ -1,0 +1,31 @@
+import { chromium } from 'playwright';
+const b=await chromium.launch({args:['--enable-gpu-rasterization']});
+const ctx=await b.newContext({viewport:{width:390,height:844},deviceScaleFactor:2,isMobile:true,hasTouch:true});
+const p=await ctx.newPage();
+const cdp=await ctx.newCDPSession(p);
+await cdp.send('Network.enable');
+await cdp.send('Emulation.setCPUThrottlingRate',{rate:4});
+await cdp.send('Network.emulateNetworkConditions',{offline:false,latency:150,downloadThroughput:1.6*1024*1024/8,uploadThroughput:750*1024/8});
+const lcp={}; const cls={};
+await p.addInitScript(()=>{
+  window.__lcp=0; window.__cls=0; window.__lt=[];
+  new PerformanceObserver(l=>{for(const e of l.getEntries()){window.__lcp=e.startTime;}}).observe({type:'largest-contentful-paint',buffered:true});
+  new PerformanceObserver(l=>{for(const e of l.getEntries()){ if(!e.hadRecentInput){ window.__cls+=e.value; } }}).observe({type:'layout-shift',buffered:true});
+  new PerformanceObserver(l=>{for(const e of l.getEntries()){ window.__lt.push({id:e.entryType==='long-animation-frame'?e.duration:e.duration}); }}).observe({type:'long-animation-frame',buffered:true});
+  window.__raf={n:0,max:0,over50:0,last:0,worstSpan:0,cur:0};
+  const tick=(t)=>{ const r=window.__raf; if(r.last){ const d=t-r.last; if(d>r.max)r.max=d; if(d>50){r.over50++; r.cur+=d; if(r.cur>r.worstSpan)r.worstSpan=r.cur;} else r.cur=0; } r.last=t; r.n++; requestAnimationFrame(tick); };
+  requestAnimationFrame(tick);
+});
+const t0=Date.now();
+await p.goto('http://127.0.0.1:3100/',{waitUntil:'load'});
+const loadMs=Date.now()-t0;
+await p.waitForTimeout(6000);
+const r=await p.evaluate(()=>({lcp:window.__lcp,cls:window.__cls,raf:window.__raf,lt:window.__lt.length,ltmax:Math.max(0,...window.__lt)}));
+const fps=r.raf.n/((Date.now()-t0)/1000);
+console.log(JSON.stringify({loadMs,lcp:Math.round(r.lcp),cls:+r.cls.toFixed(4),fps:+fps.toFixed(1),rafMax:Math.round(r.raf.max),over50:r.raf.over50,worstStall:Math.round(r.raf.worstSpan),longTasks:r.lt,longTaskMax:Math.round(r.ltmax)}));
+// INP probe: tap hero CTA
+const t1=Date.now();
+await p.click('a.hero__actions a, .hero__actions a',{timeout:5000}).catch(()=>{});
+await p.waitForTimeout(300);
+console.log('CLICK_MS='+(Date.now()-t1));
+await b.close();
