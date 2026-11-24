@@ -8,6 +8,13 @@ working unlimited-albums path.**
 Signed with `mtantongco`. Built on GrindrPlus v5.0.1 for host **26.0.1 (149389)**.
 Not affiliated with Grindr LLC.
 
+**Live docs:** [marktantongco.github.io/grindr-plus-plus-mt](https://marktantongco.github.io/grindr-plus-plus-mt/)
+
+**Next.js landing (`web/`):** deploys to Vercel from the `web` root directory —
+`cd web && vercel --prod`, or import the repo at
+[vercel.com/new](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fmarktantongco%2Fgrindr-plus-plus-mt&root-directory=web).
+`web/vercel.json` pins `framework: nextjs` and `installCommand: npm ci`.
+
 > **Fork notice.** This tree descends from
 > [fatterdev/grindr-plus-plus](https://github.com/fatterdev/grindr-plus-plus) →
 > [R0rt1z2/GrindrPlus](https://github.com/R0rt1z2/GrindrPlus) →
