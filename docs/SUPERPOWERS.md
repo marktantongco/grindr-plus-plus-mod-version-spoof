@@ -47,6 +47,11 @@ locally-forged `Success`. `UnlimitedAlbums` uses it for album payloads;
 `BanManagement` for the login result. Extend it to any endpoint to build a local
 entitlements layer.
 
+`UnlimitedAlbums` doubles as the reference failure path: it calls `v2/albums/{albumId}`
+(the app's own endpoint — `v1` answers a bare `404` body that breaks `JSONObject`),
+gates parsing on `code in 200..299`, and falls back to the local album DB rather than
+returning the untouched error.
+
 ## 5. Geographic tier bypass
 
 ```

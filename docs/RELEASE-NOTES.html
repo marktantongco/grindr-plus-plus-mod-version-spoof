@@ -1,0 +1,50 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Release notes — grindr-plus-plus-mt</title><link rel="stylesheet" href="assets/site.css"></head><body><div class="wrap"><nav class="top"><a href="index.html">grindr-plus-plus<span>-mt</span></a><span class="sep">/</span><span>Release notes</span></nav><article><h1>GPlus v5.0.1-26.24.0 spoof (mtantongco)</h1>
+<p><b>Module</b> <code>5.0.1-26.0.1_ab40f4a</code> · <b>Host</b> Grindr <code>26.0.1 / 149389</code> · <b>Signature</b> <code>mtantongco</code></p>
+<p><b>APK</b> <code>GPlus_v5.0.1-26.24.0spoof-mtantongco-release.apk</code></p>
+<p>Built on <code>gustarmartins/GrindrPlus</code> v5.0.1 (<code>c43f6c4</code>) with the fork&#x27;s spoof defaults and</p>
+<p><code>AssignmentsInterceptor</code> JWT experiment engine. Not affiliated with Grindr LLC. GPL-3.0.</p>
+<h2>What changed in this build</h2>
+<h3>1. Album loading: <code>v1</code> → <code>v2</code> + real HTTP status handling</h3>
+<p><code>UnlimitedAlbums.handleGetAlbum</code> requested <code>GET https://grindr.mobi/v1/albums/{albumId}</code> and</p>
+<p>parsed the body <b>regardless of status code</b>. The v1 endpoint answers <code>404</code> with a bare</p>
+<p>integer body on albums the viewer is not entitled to, so <code>JSONObject(&quot;404&quot;)</code> threw:</p>
+<pre><code>Error parsing album content: Value 404 of type java.lang.Integer cannot be converted to JSONObject
+  at UnlimitedAlbums.parseAlbumContent(UnlimitedAlbums.kt:446)
+  at UnlimitedAlbums.handleGetAlbum$lambda$8(UnlimitedAlbums.kt:379)</code></pre>
+<p>That error was swallowed by the outer <code>catch</code>, which fell back to the local album DB — where</p>
+<p>the album is not present either (<code>Album &lt;id&gt; not found in database</code>) — so the chat album</p>
+<p>rendered blank and slow, retrying on every open.</p>
+<p>Three coordinated fixes, all in <code>UnlimitedAlbums.kt</code>:</p>
+<table><thead><tr><th>Line</th><th>Before</th><th>After</th></tr></thead><tbody><tr><td>~374</td><td><code>v1/albums/$albumId</code></td><td><code>v2/albums/$albumId</code></td></tr><tr><td>~376</td><td>parse any non-empty body</td><td><code>if (code in 200..299 &amp;&amp; body non-empty)</code> else DB fallback</td></tr><tr><td>~397</td><td><code>if (!originalResult.isSuccess()) return originalResult</code> (aborts DB fallback on 404)</td><td>guard removed — DB fallback now runs on 404</td></tr><tr><td>~488</td><td><code>loge(&quot;Album object not found&quot;)</code> then fall through</td><td><code>return fetchAlbumFromDatabase(...)</code></td></tr></tbody></table>
+<p>The <code>v2</code> endpoint is the one the app itself calls (<code>handleGetAlbum</code> hook target</p>
+<p><code>v2/albums/{albumId}</code>), so the forged payload now comes from the same shape the client</p>
+<p>expects. HTTP failures are logged with the status code instead of masquerading as parse errors.</p>
+<p><b>Verified on device:</b> <code>Initialized hook: Unlimited albums</code> after install; the <code>v1</code></p>
+<p><code>Value 404</code> stack traces stop recurring on the new module.</p>
+<h3>2. Carry-over from the fork base (unchanged, restated for completeness)</h3>
+<p>* Spoof defaults compiled to <code>26.24.0 / 195444</code> — clears the Nov-2026 &quot;Update Required&quot; login gate and survives a manager config wipe.</p>
+<p>* <code>AssignmentsInterceptor</code> rewrites the session JWT <code>experiments</code> map from <code>experiment_&lt;name&gt;</code> config keys. Proven: <code>Session experiments rewritten: 4 override(s) applied</code>.</p>
+<p>* <code>mtantongco</code> signature — uninstall any other GrindrPlus signature before installing.</p>
+<h2>Install</h2>
+<pre><code># 1. both apps force-stopped first — the manager rewrites grindrplus.json while running
+adb shell am force-stop com.grindrplus
+adb shell am force-stop com.grindrapp.android
+
+# 2. install over the existing clone (same mtantongco signature)
+adb install -r GPlus_v5.0.1-26.24.0spoof-mtantongco-release.apk
+
+# 3. re-open the manager, Install → use the existing host bundle, then launch
+adb shell monkey -p com.grindrapp.android -c android.intent.category.LAUNCHER 1</code></pre>
+<p>Full walkthroughs: <a href="INSTALL-BEGINNER.html">docs/INSTALL-BEGINNER.md</a> ·</p>
+<p><a href="INSTALL-EXPERT.html">docs/INSTALL-EXPERT.md</a></p>
+<h2>Known state at release</h2>
+<table><thead><tr><th>Item</th><th>State</th></tr></thead><tbody><tr><td>Album loading</td><td>endpoint + status fix shipped; blank/slow retry loop removed</td></tr><tr><td>Location spoofer + Always Online</td><td>enabled together, stable on <code>ab40f4a</code></td></tr><tr><td><code>Always Online</code> first run</td><td>logs <code>Cascade fetch failed: HTTP 401</code> until the session token refreshes — self-clears</td></tr><tr><td>Assignments interceptor</td><td><b>off</b> by default in this build&#x27;s pushed config; enable when you want experiments forced</td></tr><tr><td><code>feature_flag_ComposeRework</code></td><td><code>on</code> (album UI rework path); set <code>off</code> to test the pre-rework path</td></tr></tbody></table>
+<p>Server-enforced and still unfixed client-side: &quot;Viewed Me&quot;, true incognito, message-send</p>
+<p>entitlement, age verification. See <a href="SUPERPOWERS.html">docs/SUPERPOWERS.md</a>.</p>
+<h2>Checksums</h2>
+<pre><code>APK    GPlus_v5.0.1-26.24.0spoof-mtantongco-release.apk
+md5    cf1b492996ba055e5aae330f7b269ec2
+sha1   &lt;fill on upload&gt;
+signer CN=mtantongco, OU=GPlus, O=mtantongco, C=PH
+cert   SHA-256 cafb0888b63cf7b39ec58083cb0da060ad0641a95bda605049517dac1afe76be</code></pre>
+<p>Host bundle: <code>com.grindrapp.android_26.0.1-149389_4arch_7dpi_15lang_6fdec45ac310df6a13d0957e00497841_apkmirror.com.apkm</code></p></article><footer><p>Fork of fatterdev/grindr-plus-plus → R0rt1z2/GrindrPlus → ElJaviLuki/GrindrPlus; hooks from gustarmartins/GrindrPlus v5.0.1. GPL-3.0. Not affiliated with Grindr LLC.</p></footer></div></body></html>

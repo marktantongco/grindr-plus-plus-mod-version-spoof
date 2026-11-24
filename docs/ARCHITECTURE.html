@@ -5,8 +5,8 @@
 <link rel="stylesheet" href="assets/site.css">
 </head><body><div class="wrap">
 <nav class="top"><a href="index.html">grindr-plus-plus<span>-mt</span></a><span class="sep">/</span><span>Architecture</span></nav>
-<article><p>Request path and where each layer can be intercepted. Read top-down: the app asks,</p>
-<p>the mod rewrites, the server answers.</p>
+<article><h1>Architecture</h1>
+<p>Request path and where each layer can be intercepted. Read top-down: the app asks, the mod rewrites, the server answers.</p>
 <pre class="mermaid"><code>flowchart TD
   A[Grindr UI&lt;br/&gt;Compose / Activity] --&gt; B[ViewModel / Repository]
   B --&gt; C[Retrofit service interface]
@@ -23,12 +23,7 @@
   A -.-&gt; N[FeatureDefinitions&lt;br/&gt;feature_flag_* config]
   N -.-&gt; G</code></pre>
 <h2>Layers</h2>
-<table><tr><th>Layer</th><th>Component</th><th>Can change</th><th>Cannot change</th></tr>
-<tr><td>UI</td><td>hook classes (<code>EnableUnlimited</code>, <code>UnlimitedAlbums</code>, …)</td><td>visibility, tab removal, paywall suppression</td><td>what the server sends</td></tr>
-<tr><td>Wire</td><td><code>AssignmentsInterceptor</code>, <code>RetrofitUtils</code></td><td>flags, experiments, response bodies</td><td>signed payloads it does not rewrite</td></tr>
-<tr><td>Identity</td><td><code>BanManagement</code>, <code>SignatureSpoofer</code>, version spoof</td><td>android_id, UA, app version claims</td><td>ban decisions</td></tr>
-<tr><td>Storage</td><td><code>ExpiringMedia</code>, <code>MediaUtils</code></td><td>keep media past expiry</td><td>server-side retention</td></tr>
-</table>
+<table><thead><tr><th>Layer</th><th>Component</th><th>Can change</th><th>Cannot change</th></tr></thead><tbody><tr><td>UI</td><td>hook classes (<code>EnableUnlimited</code>, <code>UnlimitedAlbums</code>, …)</td><td>visibility, tab removal, paywall suppression</td><td>what the server sends</td></tr><tr><td>Wire</td><td><code>AssignmentsInterceptor</code>, <code>RetrofitUtils</code>, <code>UnlimitedAlbums</code></td><td>flags, experiments, response bodies, album fetch endpoint</td><td>signed payloads it does not rewrite</td></tr><tr><td>Identity</td><td><code>BanManagement</code>, <code>SignatureSpoofer</code>, version spoof</td><td>android_id, UA, app version claims</td><td>ban decisions</td></tr><tr><td>Storage</td><td><code>ExpiringMedia</code>, <code>MediaUtils</code></td><td>keep media past expiry</td><td>server-side retention</td></tr></tbody></table>
 <h2>Entitlement flow</h2>
 <pre class="mermaid"><code>sequenceDiagram
   participant App
@@ -43,13 +38,13 @@
   Mod-&gt;&gt;Mod: override feature_flag_* entries
   Mod--&gt;&gt;App: assignments (rewritten)
   App-&gt;&gt;App: render per roles + flags</code></pre>
-<p>The client trusts the payload; the server never re-issues it for a session already</p>
-<p>handed out. That gap is the whole attack surface.</p>
+<p>The client trusts the payload; the server never re-issues it for a session already handed out. That gap is the whole attack surface.</p>
+<h2>Forged-response failure paths</h2>
+<p>A forge that only handles the happy path turns a server refusal into a blank screen. <code>UnlimitedAlbums.handleGetAlbum</code> is the pattern to copy:</p>
+<p>1. call the endpoint the app itself calls (<code>v2/albums/{albumId}</code>; <code>v1</code> answers a bare    <code>404</code> integer body, which <code>JSONObject</code> rejects); 2. branch on <code>code in 200..299</code> before touching the body; 3. on any non-2xx, empty body, or missing result object, fall back to the local    album DB instead of returning the untouched error.</p>
+<p>Skipping step 2 is what produced <code>Value 404 of type java.lang.Integer cannot be converted to JSONObject</code> on every unentitled album.</p>
 <h2>Why hooks soft-fail</h2>
-<p>Every obfuscated symbol is resolved through <code>MappingDictionary</code></p>
-<p>(remote pack → device cache → bundled assets → literal). A miss logs and skips</p>
-<p>rather than crashing the host. Consequence: <b>silent partial function</b>. Check</p>
-<p><code>Status Dialog</code> after any Grindr update — a skipped hook is not a working hook.</p>
+<p>Every obfuscated symbol is resolved through <code>MappingDictionary</code> (remote pack → device cache → bundled assets → literal). A miss logs and skips rather than crashing the host. Consequence: <b>silent partial function</b>. Check <code>Status Dialog</code> after any Grindr update — a skipped hook is not a working hook.</p>
 <h2>Component map</h2>
 <pre class="mermaid"><code>flowchart LR
   subgraph module

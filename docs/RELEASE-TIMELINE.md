@@ -20,6 +20,8 @@ Each row is evidence-backed (device log, build log, or file hash) — not intent
 | 13 | 12:5x | Reinstall dance with `mtantongco` signature; live clone `com.grindrapp.android` patched `ab40f4a` | embedded module string check |
 | 14 | 13:12 | **Engine proven**: `Session experiments rewritten: 4 override(s) applied` | device log |
 | 15 | 13:2x | Gallery hygiene: 647 unmodified screenshots 2024-09→2026-08-24 trashed | `ls` counts |
+| 16 | 2026-11-24 12:39 | `UnlimitedAlbums` album path `v1`→`v2`; HTTP-status guard + DB fallback on non-2xx; signed `albums2` build (md5 `cf1b4929…`) | source diff, `apksigner verify` |
+| 17 | 2026-11-24 12:43 | Manager install over `com.grindrapp.android`; `Initialized hook: Unlimited albums` on the new module, live `26.0.1` retained | device log, `lastUpdateTime` 12:43:08 |
 
 ## Version map
 
@@ -27,4 +29,4 @@ Each row is evidence-backed (device log, build log, or file hash) — not intent
 |---|---|---|---|
 | upstream v5.0.1 (`c43f6c4`) | upstream release key | original hooks | superseded |
 | smali patch `26.24.0` | `gppcustom` | + spoof constants | superseded |
-| **`ab40f4a` (this fork)** | **`mtantongco`** | + JWT experiment engine, baked spoof | **current** |
+| **`ab40f4a` + albums2 (this fork)** | **`mtantongco`** | + JWT experiment engine, baked spoof, `v2` album path | **current** |

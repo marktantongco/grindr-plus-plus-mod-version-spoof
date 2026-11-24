@@ -371,15 +371,16 @@ class UnlimitedAlbums : Hook("Unlimited albums", "Allow to be able to view unlim
 
             try {
                 GrindrPlus.httpClient
-                    .sendRequest(url = "https://grindr.mobi/v1/albums/$albumId", method = "GET")
+                    .sendRequest(url = "https://grindr.mobi/v2/albums/$albumId", method = "GET")
                     .use { response ->
+                        val code = response.code
                         val responseBody = response.body?.string()
-                        if (!responseBody.isNullOrEmpty()) {
-                            logd("Got ${responseBody.length} bytes for album $albumId")
+                        logd("Album $albumId HTTP $code, ${responseBody?.length ?: 0} bytes")
+                        if (code in 200..299 && !responseBody.isNullOrEmpty()) {
                             val modifiedResult = parseAlbumContent(albumId, responseBody, result)
                             return@withSuspendResult modifiedResult
                         } else {
-                            loge("Empty response body for album $albumId")
+                            loge("Album $albumId fetch failed (HTTP $code), falling back to database")
                             val modifiedResult = fetchAlbumFromDatabase(albumId, result)
                             return@withSuspendResult modifiedResult
                         }
@@ -394,7 +395,6 @@ class UnlimitedAlbums : Hook("Unlimited albums", "Allow to be able to view unlim
         }
 
     private fun fetchAlbumFromDatabase(albumId: Long, originalResult: Any): Any {
-        if (!originalResult.isSuccess()) return originalResult
         try {
             loge("Fetching album with ID: $albumId from database")
             return runBlocking {
@@ -486,7 +486,8 @@ class UnlimitedAlbums : Hook("Unlimited albums", "Allow to be able to view unlim
                         setObjectField(albumObject, "content", grindrAlbumContentList)
                         return originalResult
                     } else {
-                        loge("Album object not found in result for album ID: $albumId")
+                        logw("Album object not found in result for album ID: $albumId, using database")
+                        return fetchAlbumFromDatabase(albumId, originalResult)
                     }
                 } catch (e: Exception) {
                     loge("Error setting album content: ${e.message}")
