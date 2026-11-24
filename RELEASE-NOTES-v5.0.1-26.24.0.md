@@ -89,7 +89,8 @@ entitlement, age verification. See [docs/SUPERPOWERS.md](docs/SUPERPOWERS.md).
 ```
 APK    GPlus_v5.0.1-26.24.0spoof-mtantongco-release.apk
 md5    cf1b492996ba055e5aae330f7b269ec2
-sha1   <fill on upload>
+sha1   c021e210b9278303fa9230f92c61e740a08e3e84
+sha256 19e0f2c7905aa06dc8831e5dccd469962c9390910581616aea348ff1db49ae64
 signer CN=mtantongco, OU=GPlus, O=mtantongco, C=PH
 cert   SHA-256 cafb0888b63cf7b39ec58083cb0da060ad0641a95bda605049517dac1afe76be
 ```
