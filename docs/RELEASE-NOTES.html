@@ -21,6 +21,12 @@
 <p>expects. HTTP failures are logged with the status code instead of masquerading as parse errors.</p>
 <p><b>Verified on device:</b> <code>Initialized hook: Unlimited albums</code> after install; the <code>v1</code></p>
 <p><code>Value 404</code> stack traces stop recurring on the new module.</p>
+<h4>Follow-up: a 2xx code still does not prove a JSON body</h4>
+<p><code>v2</code> is better than <code>v1</code> but not sufficient on its own: Grindr also answers some <b>foreign</b> albums with <code>HTTP 200</code> and the bare integer body <code>404</code>. The old gate <code>code in 200..299 &amp;&amp; body non-empty</code> therefore passed and <code>JSONObject(&quot;404&quot;)</code> still threw at the same line, so the <code>v1</code>→<code>v2</code> swap alone did not fix foreign albums.</p>
+<p>Two more guards, both in <code>UnlimitedAlbums.kt</code>:</p>
+<table><thead><tr><th>Line</th><th>Guard</th></tr></thead><tbody><tr><td>~383</td><td><code>bodyIsJsonObject</code> — trimmed body must start with <code>{</code>; a non-object body now takes the DB fallback instead of the parser</td></tr><tr><td>~455</td><td><code>parseAlbumContent</code> re-checks the same thing before <code>JSONObject(...)</code> and returns the DB fallback itself, so no other caller can reintroduce the throw</td></tr></tbody></table>
+<p>The failure log now carries the body prefix: <code>Album &lt;id&gt; fetch failed (HTTP &lt;code&gt;, body=&lt;first 40 chars&gt;), falling back to database</code>.</p>
+<p><b>Verified:</b> guard compiled into the signed module (<code>classes3.dex</code> carries the new fallback string and the <code>UnlimitedAlbums</code> class); clean baseline reproduced the bug at log lines 12398-12446 for album <code>180490263</code>.</p>
 <h3>2. Carry-over from the fork base (unchanged, restated for completeness)</h3>
 <p>* Spoof defaults compiled to <code>26.24.0 / 195444</code> — clears the Nov-2026 &quot;Update Required&quot; login gate and survives a manager config wipe.</p>
 <p>* <code>AssignmentsInterceptor</code> rewrites the session JWT <code>experiments</code> map from <code>experiment_&lt;name&gt;</code> config keys. Proven: <code>Session experiments rewritten: 4 override(s) applied</code>.</p>
