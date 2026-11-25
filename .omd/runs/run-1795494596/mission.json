@@ -1,6 +1,29 @@
 {
-  "state": "DETECT",
+  "state": "VERIFY",
   "project": "/home/x1/.cache/gpp-work/repo",
   "runDir": "/home/x1/.cache/gpp-work/repo/.omd/runs/run-1795494596",
-  "cmd": "bootstrap"
+  "cmd": "manual-advance",
+  "history": [
+    {
+      "state": "DETECT",
+      "note": "task.md populated; 5 lanes dispatched; scout + art-director complete; 3D-landing librarian complete (research/3d-landing-research.md, D-06..D-12 recorded); fork-lineage librarian + executor latency still running"
+    },
+    {
+      "state": "DESIGN_SYSTEM_DISPOSITION",
+      "note": "establish (design-system-decision.json, manual mode D-05); council ledger D-01..D-14; data-inventory.md written; concept locked (Orbital Hierarchy)"
+    },
+    {
+      "state": "SYSTEM_PROOF",
+      "note": "research complete: 3d-landing-research.md + grindr-plus-lineage.md; awaiting executor perf measurement to backfill storyboard ms slots"
+    },
+    {
+      "state": "SYSTEM_PROOF",
+      "note": "SYSTEM_PROOF complete: system/philosophy.md (P1-P4), system/decisions.md (40 D-P rows, 0 without evidence), tokens.css, contrast.md (measured; rule split into decorative/strong after 1.27:1 failure), components.md (8 presets + 2 no-preset), unknowns.md (U-1..U-9 + P-1 bound), layout-grammar.md (scroll narrative, reverse-count pass), content.md (full string inventory); DESIGN.md 7 anchors in order, marked non-canonical; ACCEPTANCE_PLAN.md A1-A46"
+    },
+    {
+      "state": "VERIFY",
+      "note": "All 46 acceptance items closed. Suite 56/0 plus out-of-suite A10-A19, A21, A30, A32-A37, A38/A39, A42/A43, A45/A46. A32 LCP 492/656ms, A33 CLS 0, A34 INP 40/48ms, A35 median 56.6fps (spread 47.6-59.9 recorded), A36 9 draw calls, A37 401.6kB gzip vs no stated budget (450kB proposed). A44 10/10 trace; gap found and closed by adding D-P1-5a for rule-strong. VERIFY.md written. Still open: real device latency for section 4, and the A39 caught-throw does not set failed mode."
+    }
+  ],
+  "note": "Hero acceptance complete; section 4 real numbers and Vercel deploy still outstanding."
 }

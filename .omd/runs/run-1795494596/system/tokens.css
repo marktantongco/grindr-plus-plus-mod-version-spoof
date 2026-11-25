@@ -1,0 +1,54 @@
+/* tokens — run-1795494596. Every value carries its D-id. */
+:root{
+  /* color (D-P1-5, addendum D-P1-5a: rule split) */
+  --color-bg:#12100f;            /* brand */
+  --color-panel:#1d1613;         /* brand */
+  --color-panel-raised:#241b17;  /* D-P1-2 lightness step, no shadow */
+  --color-ink:#f4ece6;           /* brand */
+  --color-ink-dim:#cbb8ac;       /* D-P1-9 inverted dim */
+  --color-muted:#a08b7f;         /* brand */
+  --color-accent:#ff8a3d;        /* brand */
+  --color-accent-ink:#12100f;    /* D-P1-7 */
+  --color-accent-light:#ffb887;  /* brand */
+  --color-rule:#33241c;          /* brand line — decorative only, 1.27:1 */
+  --color-rule-strong:#7a6350;   /* D-P1-5a — 3.37:1, boundaries */
+  --color-focus:#ff8a3d;         /* 8.09:1 */
+  --color-disabled:#7a6350;
+
+  /* type (D-P3-1, D-P3-2) */
+  --font-display:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --font-body:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --size-display:clamp(2.6rem,5.2vw,5.2rem);
+  --size-title:clamp(1.15rem,1.8vw,1.5rem);
+  --size-body:1rem;
+  --size-label:0.72rem;
+  --track-display:-0.03em;
+  --track-label:0.16em;
+  --lh-display:1.02;
+  --lh-body:1.55;
+  --measure-body:62ch;
+
+  /* space (D-P4-1) */
+  --space-1:4px;  --space-2:8px;  --space-3:12px; --space-4:16px;
+  --space-5:24px; --space-6:32px; --space-7:48px; --space-8:64px;
+  --space-9:96px; --space-10:128px; --space-11:160px; --space-12:192px;
+  --gutter:clamp(20px,5vw,72px);   /* D-P4-4 */
+  --measure-page:1240px;           /* D-P4-4 */
+
+  /* shape (D-P1-3) */
+  --radius-panel:14px;
+  --radius-control:10px;
+  --radius-pill:999px;
+
+  /* size */
+  --size-masthead:64px;
+  --size-control:44px;
+
+  /* motion (D-P4-5) */
+  --ease:cubic-bezier(.22,.61,.36,1);
+  --dur-reveal:.6s;
+  --dur-micro:.18s;
+}
+@media (prefers-reduced-motion:reduce){
+  :root{ --dur-reveal:0s; --dur-micro:0s; }  /* D-P4-7 */
+}

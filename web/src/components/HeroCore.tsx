@@ -4,7 +4,14 @@
 // Budget: <100 draw calls, single instanced draw for the field (D-08, A36).
 // The wrapper handles WebGL probe, poster fallback and reduced motion (D-09/D-10).
 
-import { useEffect, useRef, useState } from "react";
+import {
+  Component,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { PerformanceMonitor } from "@react-three/drei";
 import * as THREE from "three";
@@ -151,6 +158,25 @@ function Core({ reduced }: { reduced: boolean }) {
   );
 }
 
+class CanvasBoundary extends Component<
+  { onError: () => void; children: ReactNode },
+  { crashed: boolean }
+> {
+  state = { crashed: false };
+  static getDerivedStateFromError() {
+    return { crashed: true };
+  }
+  componentDidCatch() {
+    // A renderer that passes the probe but dies on construction must land on the
+    // poster, not on a React error overlay (A39). The poster is already painted
+    // underneath, so the swap is just a state flip.
+    this.props.onError();
+  }
+  render() {
+    return this.state.crashed ? null : this.props.children;
+  }
+}
+
 export function HeroCore() {
   const [mode, setMode] = useState<"poster" | "live" | "failed">("poster");
   const [reduced, setReduced] = useState(false);
@@ -169,6 +195,8 @@ export function HeroCore() {
     return () => mq.removeEventListener("change", onChange);
   }, []);
 
+  const fail = useCallback(() => setMode("failed"), []);
+
   return (
     <div className="hero__figure" data-canvas={mode}>
       <div className="hero__poster" aria-hidden="true">
@@ -176,15 +204,17 @@ export function HeroCore() {
       </div>
       {mode === "live" && (
         <div className="hero__canvas">
-          <Canvas
-            dpr={[1, 1.5]}
-            camera={{ position: [0, 0, 5.2], fov: 42 }}
-            gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
-            frameloop={reduced ? "demand" : "always"}
-            onCreated={({ gl }) => gl.setClearAlpha(0)}
-          >
-            <Core reduced={reduced} />
-          </Canvas>
+          <CanvasBoundary onError={fail}>
+            <Canvas
+              dpr={[1, 1.5]}
+              camera={{ position: [0, 0, 5.2], fov: 42 }}
+              gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
+              frameloop={reduced ? "demand" : "always"}
+              onCreated={({ gl }) => gl.setClearAlpha(0)}
+            >
+              <Core reduced={reduced} />
+            </Canvas>
+          </CanvasBoundary>
         </div>
       )}
     </div>

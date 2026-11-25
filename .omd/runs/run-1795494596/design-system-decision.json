@@ -1,0 +1,18 @@
+{
+  "decision": "establish",
+  "decidedBy": "orchestrator (manual mode)",
+  "date": "2026-11-24",
+  "reasons": [
+    "No DESIGN.md anywhere in repo (find: 0 hits)",
+    "No .omd/config.json, no .omd/preferences.md, no component library, no Tailwind config",
+    "Only existing styling = CSS custom properties in docs/index.html:9 (bg #12100f, panel #1d1613, ink #f4ece6, muted #a08b7f, acc #ff8a3d, line #33241c) — adopted as seed palette, not as a system",
+    "Greenfield web surface (no Next.js/Tailwind exists yet) with explicit brand authority in task.md"
+  ],
+  "controllerNote": "design-system-plan.cjs, design-council-prime.cjs and the omd CLI are NOT installed on this machine. This receipt is manually authored, not compiler-produced. No binding hashes, projection SHAs, or design-md:claim blocks were fabricated. DESIGN.md will be hand-authored as a plain brand contract, explicitly marked non-canonical/manual, with D-id rationales per the derivation chain.",
+  "seedTokens": {
+    "bg": "#12100f", "panel": "#1d1613", "ink": "#f4ece6", "muted": "#a08b7f",
+    "accent": "#ff8a3d", "accent_light": "#ffb887", "line": "#33241c",
+    "headingFont": "ui-monospace", "bodyFont": "ui-sans-serif", "radius": 14,
+    "easing": "power2.out", "duration": 0.6
+  }
+}
