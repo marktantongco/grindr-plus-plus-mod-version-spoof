@@ -1,0 +1,10 @@
+VALID rec2/s1/ 33 5379
+VALID rec2/s3/ 33 1551
+VALID rec2/s7/ 33 None
+VALID rec5/s1/ 33 None
+VALID rec6/s2/ 33 None
+VALID rec6/s8/ 33 None
+VALID rec8/s7/ 33 1518
+VALID rec8/s8/ 33 1815
+samples 18 valid 8 [33, 33, 33, 33, 33, 33, 33, 33]
+content n=4 [5379, 1551, 1518, 1815] median=1683.0

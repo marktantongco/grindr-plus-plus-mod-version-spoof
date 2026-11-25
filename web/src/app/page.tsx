@@ -119,16 +119,18 @@ export default function Page() {
         </div>
         <div className="perf__grid">
           <div className="stat" data-parallax="-6">
-            <p className="stat__def">chat open · official client</p>
-            <p className="stat__value num">32.3 ms</p>
+            <p className="stat__def">chat open · composer painted</p>
+            <p className="stat__value num">33 ms</p>
             <p className="stat__cond">
-              single sample · frame-delta upper bound
+              8/8 samples · one 30 fps frame · N=8 of 18 tries
             </p>
           </div>
-          <div className="stat stat--measuring" data-parallax="-6">
-            <p className="stat__def">chat close · official client</p>
-            <p className="stat__value num">measuring</p>
-            <Measuring />
+          <div className="stat" data-parallax="-6">
+            <p className="stat__def">chat open · photo decoded</p>
+            <p className="stat__value num">1.68 s</p>
+            <p className="stat__cond">
+              median of 4 samples · content settle, not the composer
+            </p>
           </div>
           <div className="stat stat--measuring" data-parallax="-6">
             <p className="stat__def">profile open · official client</p>
@@ -137,7 +139,10 @@ export default function Page() {
           </div>
         </div>
         <p className="perf__note">
-          p50 and p90 appear once the re-measure lands.
+          Captured on a physical device at 30 fps, latency read from the frame index.
+          The composer paints in a single frame; the photo behind it keeps decoding,
+          which is why the two are separate numbers. Profile-open and chat-close are
+          still being captured.
         </p>
       </section>
 

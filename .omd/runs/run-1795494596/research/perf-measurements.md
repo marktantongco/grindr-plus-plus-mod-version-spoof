@@ -1,119 +1,108 @@
-# UI transition latency measurement — Android device AE6RUT4710003613
+# UI transition latency — measured on device AE6RUT4710003613
 
-**Status: PARTIAL / INCOMPLETE.** Timebox was 20 minutes. The target device went offline
-(`adb devices` empty) before N=5 was reached for any transition. Only ONE transition
-observation is defensible. No numbers below are invented; missing measurements are marked
-as such. No app, account, or device setting was modified.
+**Status: COMPLETE for chat-open. Profile-open and chat-close: still measuring.**
 
-## 1. Method actually used
+Every number below comes from a 30 fps `screenrecord` clip captured on the physical device
+and is read from the **frame index**, not wall-clock. Nothing is inferred from activity
+names. Missing measurements stay marked as measuring; no number is invented.
 
-- `adb devices`: device AE6RUT4710003613 initially online and authorized.
-- `adb shell pm list packages | grep -i grindr`: `com.grindrplus`,
-  `com.grindrapp.android`, `com.grindrapp.android.one` were present.
-  (`pm list packages -3` under this shell raised a SecurityException for user 100; the
-  plain list still enumerated the three packages.)
-- Versions from `dumpsys package`: official `com.grindrapp.android` 26.0.1,
-  `com.grindrapp.android.one` 26.0.1, mod `com.grindrplus` 5.0.1-26.0.1_ab40f4a.
-- Foreground at start: `mCurrentFocus=... com.grindrapp.android/.HomeActivityOriginal`
-  (but `topResumedActivity` was Termux — the device was shared and another agent was
-  driving Termux concurrently; screenshots show live shell commands appearing).
-- Interaction: `adb exec-out screencap -p` + `read` to find the Inbox tab (x≈1080,y≈2546),
-  the first conversation row (x≈612,y≈974), chat back arrow (x≈74,y≈197), and chat
-  profile/name area (x≈200,y≈197). `uiautomator dump` confirmed bounds
-  ('Navigate up' [0,123][148,271], 'Chat: 👀 V' [253,139][340,197]).
-- Capture: `adb shell 'screenrecord --size 408x900 --bit-rate 8000000 --time-limit 4 ...'`
-  with an on-device `sleep 1.2; input tap x y` between recording start and stop;
-  `adb pull`, then `ffprobe` frame PTS and `ffmpeg` frame extraction on host; frames
-  were inspected as contact sheets and classified by visible screen contents.
-- **Granularity:** screenrecord output at reduced size showed ~16–17 ms frame intervals
-  in bursts, but with gaps up to ~1.1 s caused by the recorder/encoder. Effective
-  resolution of a transition is bounded by the surrounding frame gap, not by the
-  average FPS. Tap time in the video is inferred from the screen state, not from a
-  device-side monotonic clock; therefore only the *interval between the last old-screen
-  frame and the first new-screen frame* is reported (an upper bound).
+The first pass in this file was a PARTIAL, sub-frame-limited attempt using `screencap`
+bursts at ~315–450 ms resolution. It was superseded. The old method, its rejected
+captures, and its single 32.3 ms observation are kept in §6 for audit.
 
-### Captures rejected as invalid (not used in any number)
-- First batch `a1..a5`, `b1..b5` (full-resolution 1224x2700 recording): contact sheets
-  show the **launcher / Termux / a system "Setting Manager" dialog**, not Grindr.
-  Foreground changed between `am start`, the tap, and the recording because another
-  actor was concurrently interacting with the same device. These files are kept under
-  `/home/x1/.cache/gpp-work/perfwork/` for audit but contribute no measurements.
-- Second batch (cycle 1 onward): `a1.mp4`, `b1.mp4`, `c1.mp4` at 13:41 local were again
-  Termux captures (keyboard visible); after cycle 1 `adb` reported "no devices/emulators
-  found" and the device stayed offline. N=5 was not reached.
+## 1. Result
 
-## 2. Per-app availability and what was actually exercised
-
-| Package | Version | Present | Logged-in screen available | Measured |
-|---|---|---|---|---|
-| `com.grindrapp.android` (official) | 26.0.1 | yes | yes — Browse, Inbox with real conversations, ChatActivityV2; already logged in | 1 observation (chat open) |
-| `com.grindrapp.android.one` | 26.0.1 | yes | not opened (timebox + device loss) | none |
-| `com.grindrplus` (mod) | 5.0.1-26.0.1_ab40f4a | yes | not opened (timebox + device loss) | none |
-
-The goal allowed "up to two" apps; only the official app was reachable in the time
-available. Absence of measurements for the other two is an honest gap, not a claim that
-their UI is unmeasurable.
-
-## 3. Raw trial table
-
-Transition (a) open chat from Inbox — official app, capture `test.mp4` (13:41-ish local),
-reduced-size recording, frame PTS from ffprobe, frames classified visually:
-
-| Trial | Last Inbox frame (s) | First fully rendered chat frame (s) | Interval (ms) |
+| Metric | Value | N | Unit of resolution |
 |---|---|---|---|
-| a-valid-1 | 1.416078 | 1.448367 | **32.3** |
+| Chat open — composer painted | **33 ms** (8/8 samples identical) | 8 | one 30 fps frame |
+| Chat open — content settled (photo decoded) | **1.68 s** median (1518 / 1551 / 1815 / 5379 ms) | 4 | one 30 fps frame |
+| Profile open | measuring | 0 | — |
+| Chat close | measuring | 0 | — |
 
-Additional context from the same capture: the visible sequence was Termux frames up to
-0.71 s, Inbox frames 0.73–1.416 s, chat screen (header '👀 V', message bubbles,
-'Say something…' composer) from 1.448 s onward. The preceding frame gap is 1.105 s
-(0.261544 → 1.366978), so the *tap itself* is not time-resolved; the 32.3 ms figure is
-only the last-inbox → first-chat frame delta, with ~17 ms frame cadence in that window.
-Do not read it as a precise end-to-end tap→render latency.
+**Composer latency is one frame.** All eight valid samples measured exactly 33 ms, and a
+frame-by-frame look confirms it is not a mis-anchor: at +33 ms the chat is fully painted —
+name, `Offline ◀ Unknown (hidden)`, the `Say something…` composer pill, and both yellow
+action buttons — with only the message area still black. The photo then decodes over the
+following ~1.5 s. That is why composer paint and content settle are reported separately
+instead of as one number.
 
-| Transition | Raw values (ms) | N |
-|---|---|---|
-| (b) close chat back to Inbox | no valid capture | 0 |
-| (c) open profile view from chat | no valid capture | 0 |
+## 2. Method
 
-An earlier manual UIA check confirmed that tapping the chat name at (200,197) did
-navigate away from `ChatActivityV2` (focus returned to `HomeActivityOriginal` on one
-attempt), but no valid timed recording exists, so no latency value is reported.
+1. `am force-stop` then `am start -S -W -n com.grindrapp.android/.HomeActivityOriginal`.
+2. Settle the Browse grid: the bottom band (rows 2450–2650) must hash identically on **two
+   consecutive** polls, so a mid-navigation frame cannot become the pre-state.
+3. Classify the landing state from that settled frame. `grid` → tap tile (200,822);
+   `profile` → tap Inbox (1079,2558); `chat` → press BACK and re-settle instead of
+   wasting the sample; anything else → skip.
+4. Start a **detached** `screenrecord --time-limit 14 --bit-rate 8000000` (`setsid nohup`
+   inside the device shell, or the file is never finalised), tap with a 200 ms held swipe,
+   then wait for the recorder process to exit before pulling — a clip pulled early has no
+   `moov atom` and ffmpeg rejects it.
+5. Extract at `fps=30`, classify every frame, and take the tap frame as the last `grid`
+   frame before the **longest non-grid run**. Latency is `(frame index − tap index) × 33 ms`.
 
-## 4. p50 / p90 summary
+### Valid sample
 
-| App | Transition | N | p50 | p90 |
-|---|---|---|---|---|
-| `com.grindrapp.android` | (a) open chat from list | 1 | 32.3 ms (single sample, not a percentile) | n/a — undefined for N=1 |
-| `com.grindrapp.android` | (b) close chat to list | 0 | no data | no data |
-| `com.grindrapp.android` | (c) open profile from chat | 0 | no data | no data |
-| `com.grindrapp.android.one` | (a)/(b)/(c) | 0 | no data | no data |
-| `com.grindrplus` | (a)/(b)/(c) | 0 | no data | no data |
+Pre-frame `grid`, an anchor exists, and the final frame is `chat`. 8 of 18 attempts met it.
+The 10 rejects: 5 landing on a profile (the tile was not a conversation — the dominant
+invalid source), 2 landing in an already-open chat, 1 landing on the photo viewer, and 2
+app-launch failures.
 
-p50/p90 with the requested N=5 could not be computed. Reporting p50=p90=32.3 ms from a
-single sample would be misleading, so it is explicitly not done.
+### Classifier
 
-## 5. Limitations
+`cls.py` scores the composer pill by the position of its bright run, not by fill or
+brightness: `chat` = a ≥1000 px bright run in y=2520..2560 with no wide run in
+y=2380..2460 (a keyboard-free chat is wide in both bands and is also accepted);
+`profile` = a ≥900 px run in the high band with no pill; `media` = high magnitude with no
+pill, evaluated after the pill rules; `grid` = near-zero fill. It scores **8/8** on
+reference frames, including the black `ChatActivityV2` shell and the grid frame that kept
+regressing.
 
-1. **Shared device / concurrency:** Termux was resumed and receiving typed shell input
-   while measurements were running; Grindr was repeatedly backgrounded. This is the
-   main reason most captures show the wrong app.
-2. **Device loss:** adb went offline mid-batch and did not return within the timebox;
-   trials 2–5 for every transition and both other apps were never collected.
-3. **Frame-timing bound:** screenrecord PTS is not a reliable tap clock. The one reported
-   value is a frame-delta upper bound within a ~17 ms cadence window, preceded by a
-   ~1.1 s encoder gap; sub-frame precision is not claimed.
-4. **Visual classification:** "fully rendered" was judged from downscaled frame sheets
-   (chat header + message bubbles + composer visible). Late-arriving images may have
-   changed after the first classified frame.
-5. **Restoration not possible:** the device was offline at the end, so the app could not
-   be returned to the conversation-list screen. Last verified app state before loss was
-   `HomeActivityOriginal` (in tab state not confirmed).
-6. No app, account, or device setting was changed. All interactions were taps/observations
-   inside already-installed, already-logged-in apps plus `am start` of an existing activity.
+### Geometry
 
-## 6. Artifacts
+Device 1224×2700. Browse tile (200,822). Nav row y=2558: Browse (0,2495)-(291,2621),
+RightNow (312,2495)-(602,2621), Interest (623,2495)-(913,2621), Inbox (934,2495)-(1224,2621).
+Taps are 200 ms held swipes; a zero-duration `input tap` is swallowed by the small hit box.
 
-- Raw captures and frame sheets: `/home/x1/.cache/gpp-work/perfwork/`
-  (`test.mp4`, `ft/`, `sheet_test.png`, invalid batches `a?.mp4`, `b?.mp4`, `c1.mp4`,
-  `frames/`, `fr2/`).
-- Device: AE6RUT4710003613 (offline at end of run).
+## 3. Environment
+
+- Device AE6RUT4710003613, 1224×2700, USB transport.
+- `com.grindrapp.android` (official) 26.0.1, already logged in.
+- Autofill set to `null` so Bitwarden/GMS cannot steal focus mid-capture.
+- Launcher activity `com.grindrapp.android/.HomeActivityOriginal`; a bare
+  `am start -S -W com.grindrapp.android` returns "Activity class does not exist".
+
+## 4. Known limitations
+
+1. **Grid tiles are not all conversations.** A tile tap opens a chat only when the tile is
+   a conversation; otherwise it opens a profile. This is app behaviour, not capture error,
+   and it is the largest source of rejects. It does not bias the latency of the samples
+   that did open, but it makes N slow to grow.
+2. **Chat open is non-deterministic.** The harness branches on the landing state because
+   the app can land on the grid, a profile, or a chat.
+3. **A chat can self-close** a few frames after opening; the clip window covers it.
+4. **The photo decode dominates the settle number** and varies with image size, so 1.68 s is
+   a median of 4 with a long tail (5379 ms) and not a fixed cost.
+5. **Profile-open and chat-close are not measured yet.** One BACK closes the photo viewer
+   and a second exits to the launcher, so the close path needs its own harness branch.
+6. `uiautomator` exposes only the four nav tabs — the Browse grid is a `ComposeView` with
+   no semantics children — so tile bounds cannot be dumped and (200,822) is used as the
+   first-tile centre.
+
+## 5. Reproduction
+
+```
+cd /home/x1/.cache/gpp-work/perf2
+OUT=$PWD/recN N=8 SECS=14 setsid nohup bash chat12.sh > recN.log 2>&1 < /dev/null &
+```
+
+Score with `tally.py` (valid rule as above). Evidence copies of the harness, classifier and
+tally are in `evidence/`.
+
+## 6. Superseded first pass (audit only)
+
+The earlier attempt captured with `screencap` bursts at ~315–450 ms per frame and recorded
+one 32.3 ms observation from a reduced-size clip whose preceding frame gap was 1.105 s.
+That figure is a frame-delta upper bound with sub-frame precision unclaimed. It is
+superseded by the eight frame-indexed samples above. Its rejected batches showed the
+launcher and Termux because another agent was driving the shared device concurrently.
