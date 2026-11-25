@@ -62,6 +62,8 @@ specific Grindr build per release. This fork exists to solve three problems upst
 | `AssignmentsInterceptor` rewrites the session **JWT `experiments`** map | client-side A/B override from config keys | `hooks/AssignmentsInterceptor.kt` |
 | Album hook on **`v2/albums/{albumId}`** with real status handling | `v1` returns bare `404`, which broke JSON parsing → blank chat albums | `hooks/UnlimitedAlbums.kt:374` |
 | DB fallback on non-2xx instead of aborting | an unentitled album should still render from the local cache | `hooks/UnlimitedAlbums.kt:397` |
+| `bodyIsJsonObject` gate on the album response | Grindr answers some foreign albums with `HTTP 200` **and the bare body `404`**, so a 2xx code alone still threw `JSONObject("404")` | `hooks/UnlimitedAlbums.kt:383` |
+| Same guard re-checked inside `parseAlbumContent` | no other caller can reintroduce the throw | `hooks/UnlimitedAlbums.kt:455` |
 | Docs: timeline, superpowers, both install levels, diagrams | the upstream README assumes you already know the mod | `docs/` |
 
 ## Download and install
@@ -136,7 +138,7 @@ is not a working hook.
 | JWT experiment override | works | `experiment_*` keys, proven `4 override(s) applied` |
 | Roles / VIP spoof | works | `Enable unlimited` role injection |
 | Expiring-media save | works | lands in `filesDir/saved_media/` |
-| Unlimited albums (chat) | works | `v2` endpoint + DB fallback, this build |
+| Unlimited albums (chat) | works, foreign albums too | `v2` endpoint + JSON-object gate + DB fallback, this build |
 | Always Online | works, fragile | needs location; first run logs `HTTP 401` until the token refreshes |
 | Location spoofer | works | keep **off** while opening Settings → Terms (legal CDN blocks the spoof) |
 | Boosting / keep-alive WS | works | config toggles |
@@ -179,7 +181,7 @@ artifact (plus Telegram when the input is set).
 | Settings → Terms is a black page | location spoofer active during load | disable spoofer, open Terms, re-enable |
 | Always Online `HTTP 401` | stale session token | wait for token refresh, or relaunch the clone |
 | Always Online `location unavailable` | spoofer off and Android standby | re-enable spoofer or disable the task |
-| Chat album blank / slow | old module on the `v1` album path | install this build |
+| Chat album blank / slow | old module on the `v1` album path, or a module without the JSON-object gate (foreign album returns `200` + body `404`) | install this build |
 | Crash loop after enabling several hooks | interceptor + Always Online + no location | disable in the reverse order you enabled them |
 | `INSTALL_FAILED_UPDATE_INCOMPATIBLE` | different signature installed | `adb uninstall <pkg>`, then install |
 

@@ -39,6 +39,27 @@ The `v2` endpoint is the one the app itself calls (`handleGetAlbum` hook target
 `v2/albums/{albumId}`), so the forged payload now comes from the same shape the client
 expects. HTTP failures are logged with the status code instead of masquerading as parse errors.
 
+#### Follow-up: a 2xx code still does not prove a JSON body
+
+`v2` is better than `v1` but not sufficient on its own: Grindr also answers some **foreign**
+albums with `HTTP 200` and the bare integer body `404`. The old gate `code in 200..299 &&
+body non-empty` therefore passed and `JSONObject("404")` still threw at the same line, so the
+`v1`→`v2` swap alone did not fix foreign albums.
+
+Two more guards, both in `UnlimitedAlbums.kt`:
+
+| Line | Guard |
+|---|---|
+| ~383 | `bodyIsJsonObject` — trimmed body must start with `{`; a non-object body now takes the DB fallback instead of the parser |
+| ~455 | `parseAlbumContent` re-checks the same thing before `JSONObject(...)` and returns the DB fallback itself, so no other caller can reintroduce the throw |
+
+The failure log now carries the body prefix:
+`Album <id> fetch failed (HTTP <code>, body=<first 40 chars>), falling back to database`.
+
+**Verified:** guard compiled into the signed module (`classes3.dex` carries the new fallback
+string and the `UnlimitedAlbums` class); clean baseline reproduced the bug at log lines
+12398-12446 for album `180490263`.
+
 **Verified on device:** `Initialized hook: Unlimited albums` after install; the `v1`
 `Value 404` stack traces stop recurring on the new module.
 

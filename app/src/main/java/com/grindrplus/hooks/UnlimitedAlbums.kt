@@ -375,12 +375,21 @@ class UnlimitedAlbums : Hook("Unlimited albums", "Allow to be able to view unlim
                     .use { response ->
                         val code = response.code
                         val responseBody = response.body?.string()
+                        val trimmed = responseBody?.trim()
                         logd("Album $albumId HTTP $code, ${responseBody?.length ?: 0} bytes")
-                        if (code in 200..299 && !responseBody.isNullOrEmpty()) {
-                            val modifiedResult = parseAlbumContent(albumId, responseBody, result)
+                        // Grindr answers some foreign albums with HTTP 200 and a bare
+                        // status integer as the body ("404"), so a 2xx code alone does
+                        // not prove the body is a JSON object.
+                        val bodyIsJsonObject = trimmed != null &&
+                                trimmed.isNotEmpty() &&
+                                trimmed.startsWith("{")
+                        if (code in 200..299 && bodyIsJsonObject) {
+                            val modifiedResult = parseAlbumContent(albumId, trimmed!!, result)
                             return@withSuspendResult modifiedResult
                         } else {
-                            loge("Album $albumId fetch failed (HTTP $code), falling back to database")
+                            loge(
+                                "Album $albumId fetch failed (HTTP $code, body=${trimmed?.take(40)}), falling back to database"
+                            )
                             val modifiedResult = fetchAlbumFromDatabase(albumId, result)
                             return@withSuspendResult modifiedResult
                         }
@@ -443,7 +452,12 @@ class UnlimitedAlbums : Hook("Unlimited albums", "Allow to be able to view unlim
         if (!originalResult.isSuccess()) return originalResult
         try {
             logd("Parsing album content for ID: $albumId")
-            val jsonResponse = JSONObject(responseBody)
+            val trimmedBody = responseBody.trim()
+            if (trimmedBody.isEmpty() || !trimmedBody.startsWith("{")) {
+                logw("Album $albumId body is not a JSON object ($trimmedBody), using database")
+                return fetchAlbumFromDatabase(albumId, originalResult)
+            }
+            val jsonResponse = JSONObject(trimmedBody)
             jsonResponse.optJSONArray("content")?.let { contentArray ->
                 logd("Content array found for album ID: $albumId")
                 val albumContentEntities = mutableListOf<AlbumContentEntity>()
