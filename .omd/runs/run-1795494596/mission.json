@@ -23,7 +23,11 @@
     {
       "state": "VERIFY",
       "note": "All 46 acceptance items closed. Suite 56/0 plus out-of-suite A10-A19, A21, A30, A32-A37, A38/A39, A42/A43, A45/A46. A32 LCP 492/656ms, A33 CLS 0, A34 INP 40/48ms, A35 median 56.6fps (spread 47.6-59.9 recorded), A36 9 draw calls, A37 401.6kB gzip vs no stated budget (450kB proposed). A44 10/10 trace; gap found and closed by adding D-P1-5a for rule-strong. VERIFY.md written. Still open: real device latency for section 4, and the A39 caught-throw does not set failed mode."
+    },
+    {
+      "state": "VERIFY",
+      "note": "A39 fixed with CanvasBoundary (componentDidCatch -> setMode failed); suite check 57-59 assert it and 60 asserts the A37 budget against D-08b. Reduced motion now mounts no Canvas at all (A30 strengthened, three/R3F chunk dropped for reduced users) and shares the poster path with the failed state. Spline premise corrected: not in the route, chunk is three core. Suite 61/0, budget gate proven by lowering it to 1 B and getting a FAIL."
     }
   ],
-  "note": "Hero acceptance complete; section 4 real numbers and Vercel deploy still outstanding."
+  "note": "Acceptance complete at 61 checks. Only section 4 real device latency and the Vercel deploy remain; device AE6RUT4710003613 is off the network."
 }

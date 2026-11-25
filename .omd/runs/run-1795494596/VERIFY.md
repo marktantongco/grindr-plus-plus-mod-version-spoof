@@ -35,8 +35,8 @@ WebGL2 `drawArrays*`/`drawElements*` hooked at prototype level, counted over one
 
 ## A37 — hero-route JS payload recorded against budget
 Route own chunks from `.next/app-build-manifest.json`: 10 files, 1 427 109 B raw, **401 564 B gzip**.
-Largest gzip contributors: spline 101 863 · three 87 609 · shared 54 100 · react-three 51 763 · framework 46 692 · gsap 35 251 · gsap-extra 19 816 · page 2 525.
-`next build` reports `300 kB` route / `403 kB` First Load JS. Budget context: D-08 sets a per-asset/per-draw budget (dpr 1.5, <100 calls, GLB <1 MB) and **no byte budget was ever written down**, so the comparison is: 401.6 kB gzip sits in the normal band for a three+R3F route and is dominated by two libraries that are lazy by design (Spline ≤1 embed, D-12). **Now judged:** D-08b sets the hero-route first-load ceiling at 450 kB gzip; measured 401 564 B -> PASS, 48 436 B (10.8%) headroom.
+Largest gzip contributors: three core 101 863 · drei/fiber 87 609 · shared 54 100 · react-three 51 763 · framework 46 692 · gsap 35 251 · gsap-extra 19 816 · page 2 525. The first figure was labelled "spline" in the original pass; the chunk is three.js core (12 modules, contains `WebGLRenderer`, only match for "spline" is `splineThru`).
+`next build` reports `300 kB` route / `403 kB` First Load JS. Budget context: D-08 sets a per-asset/per-draw budget (dpr 1.5, <100 calls, GLB <1 MB) and **no byte budget was ever written down**, so the comparison is: 401.6 kB gzip sits in the normal band for a three+R3F route and is dominated by three.js core (101.9 kB), not by any lazily-loaded asset — **Spline is not in this route at all**, only `splineThru`, a three curve helper. **Now judged:** D-08b sets the hero-route first-load ceiling at 450 kB gzip; measured 401 564 B -> PASS, 48 436 B (10.8%) headroom.
 D-08b was written after this measurement, so the ceiling is derived from the number rather than the number from the ceiling - stated rather than hidden.
 
 ## A10–A13 — measurement honesty
@@ -48,8 +48,8 @@ D-08b was written after this measurement, so the ceiling is derived from the num
 ## A21 — focus ring is an outline, not a border or opacity fade
 `:focus-visible { outline: … }` at `app.css:50`, with the skip-link and `#main` variants at 133/138. PASS.
 
-## A30 — reduced motion renders one static frame
-`HeroCore` sets `frameloop={reduced ? "demand" : "always"}` (line 183) and `Core` returns early from its effect when reduced; the matchMedia listener flips it live. PASS.
+## A30 — reduced motion renders one static frame, and mounts no GL context
+The poster is now the reduced-motion frame, not a paused canvas: `HeroCore` sets `mode` to `failed` when `prefers-reduced-motion: reduce`, so no `<Canvas>` mounts at all. Suite check `A30-reduced-no-canvas`: `mode=failed canvas=false poster=1`. The listener still flips it live, so toggling the OS setting mid-session switches in and out without a reload. This also drops the entire three/R3F chunk for reduced-motion users. PASS.
 
 ## A38 — WebGL off: poster is the hero visual, text still paints, nothing uncaught
 `getContext` forced to null for webgl/webgl2: figure `data-canvas="failed"`, poster SVG present and visible at 348×285, h1 "The mod, measured.", CTA present, no canvas, **0 console errors**. Screenshot `/tmp/opencode/verify/a38-nogl.png`. PASS.

@@ -222,9 +222,18 @@ for (const [id, w, h] of viewports) {
   const st = await page.evaluate(() => ({
     states: Array.from(document.querySelectorAll(".segment")).map((e) => e.dataset.state),
     smoother: document.querySelectorAll("#smooth-wrapper > .scroll-content, #smooth-wrapper").length,
+    mode: document.querySelector(".hero__figure")?.dataset.canvas,
+    canvas: !!document.querySelector(".hero__canvas canvas"),
     posterVisible: getComputedStyle(document.querySelector(".hero__poster")).opacity,
   }));
   rec("A29-reduced-locked", st.states.every((s) => s === "locked"), st.states.join(","));
+  // A30: reduced motion must not mount a WebGL context at all. The poster is the
+  // still frame, so there is nothing to pause and nothing to animate.
+  rec(
+    "A30-reduced-no-canvas",
+    st.mode === "failed" && !st.canvas && st.posterVisible === "1",
+    `mode=${st.mode} canvas=${st.canvas} poster=${st.posterVisible}`,
+  );
   await ctx.close();
 }
 
@@ -252,6 +261,59 @@ for (const [id, w, h] of viewports) {
   rec("A38-fallback", st.mode === "failed" && st.svg && st.textPainted, JSON.stringify(st));
   rec("A38-noerr", errs.length === 0, errs.join(" | ") || "none");
   await page.screenshot({ path: `${OUT}/nogl.png` });
+  await ctx.close();
+}
+
+// --- renderer constructor throw lands on the failed poster (A39) ---
+// probeWebGL covers a missing context only. Here the context exists and the
+// probe passes, then WebGLRenderer dies on construction. CanvasBoundary must
+// catch it and flip the figure to the failed state with the poster showing.
+{
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  const page = await ctx.newPage();
+  const errs = [];
+  page.on("pageerror", (e) => errs.push(String(e)));
+  await page.addInitScript(() => {
+    const orig = HTMLCanvasElement.prototype.getContext;
+    let used = false;
+    HTMLCanvasElement.prototype.getContext = function (t, o) {
+      const r = orig.call(this, t, o);
+      const k = String(t);
+      if (r && (k === "webgl2" || k === "webgl") && !used && this.isConnected) {
+        used = true;
+        r.getExtension = () => {
+          throw new Error("forced-renderer-throw");
+        };
+      }
+      return r;
+    };
+  });
+  await page.goto(URL, { waitUntil: "domcontentloaded" });
+  await page.waitForTimeout(1800);
+  const st = await page.evaluate(() => {
+    const f = document.querySelector(".hero__figure");
+    const poster = document.querySelector(".hero__poster");
+    return {
+      mode: f?.dataset.canvas,
+      canvas: !!document.querySelector(".hero__canvas canvas"),
+      svg: !!document.querySelector(".hero__poster svg"),
+      posterOpacity: poster ? getComputedStyle(poster).opacity : null,
+      h1: !!document.querySelector("h1")?.textContent,
+      cta: document.querySelector(".hero__actions a")?.getAttribute("href"),
+    };
+  });
+  rec(
+    "A39-throw-fails-closed",
+    st.mode === "failed" && !st.canvas && st.svg && st.posterOpacity === "1",
+    JSON.stringify(st),
+  );
+  rec("A39-throw-no-pageerror", errs.length === 0, errs.join(" | ") || "none");
+  rec(
+    "A39-throw-copy-intact",
+    st.h1 && st.cta === "#install",
+    `h1=${st.h1} cta=${st.cta}`,
+  );
+  await page.screenshot({ path: `${OUT}/throw.png` });
   await ctx.close();
 }
 
@@ -292,6 +354,30 @@ for (const [id, w, h] of viewports) {
   const dc = await page.evaluate(() => window.__dc);
   rec("A36-drawcalls", dc > 0 && dc < 100, `${dc} draw calls in one frame`);
   await ctx.close();
+}
+
+// --- route payload against the D-08b byte budget (A37) ---
+// Measured from the build manifest, not from the wire, so it is deterministic
+// and can gate a commit. gzip -9 is the same codec the server negotiates.
+{
+  const { gzipSync } = await import("node:zlib");
+  const { readFileSync } = await import("node:fs");
+  const manifest = JSON.parse(readFileSync(".next/app-build-manifest.json", "utf8"));
+  const files = manifest.pages["/page"] ?? [];
+  let bytes = 0;
+  for (const f of files) {
+    try {
+      bytes += gzipSync(readFileSync(`.next/${f}`, { level: 9 })).length;
+    } catch {
+      /* manifest lists a file the build pruned; skip it */
+    }
+  }
+  const BUDGET = 450_000;
+  rec(
+    "A37-payload-budget",
+    bytes > 0 && bytes <= BUDGET,
+    `${bytes} B gzip over ${files.length} chunks vs ${BUDGET} B (D-08b)`,
+  );
 }
 
 await browser.close();

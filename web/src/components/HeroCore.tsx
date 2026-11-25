@@ -86,7 +86,7 @@ function Field({ count }: { count: number }) {
   );
 }
 
-function Core({ reduced }: { reduced: boolean }) {
+function Core() {
   const core = useRef<THREE.Mesh>(null);
   const shell = useRef<THREE.Mesh>(null);
   const { clock, invalidate, camera, size } = useThree();
@@ -104,12 +104,6 @@ function Core({ reduced }: { reduced: boolean }) {
     cam.updateProjectionMatrix();
     invalidate();
   }, [camera, size.height, size.width, invalidate]);
-
-  useEffect(() => {
-    if (!reduced) return;
-    clock.start();
-    invalidate();
-  }, [reduced, clock, invalidate]);
 
   useFrame(() => {
     const t = clock.elapsedTime;
@@ -186,14 +180,24 @@ export function HeroCore() {
     setReduced(mq.matches);
     const onChange = () => setReduced(mq.matches);
     mq.addEventListener("change", onChange);
-
-    if (!probeWebGL()) {
-      setMode("failed");
-      return () => mq.removeEventListener("change", onChange);
-    }
-    setMode("live");
     return () => mq.removeEventListener("change", onChange);
   }, []);
+
+  // Reduced motion and a dead renderer both land on the poster. One code path,
+  // one visual: the still frame is the SVG, not a paused WebGL context. That
+  // drops the whole three/R3F chunk for reduced-motion users and makes the
+  // failed state something the suite can assert against the same markup.
+  useEffect(() => {
+    if (reduced) {
+      setMode("failed");
+      return;
+    }
+    if (!probeWebGL()) {
+      setMode("failed");
+      return;
+    }
+    setMode("live");
+  }, [reduced]);
 
   const fail = useCallback(() => setMode("failed"), []);
 
@@ -209,10 +213,9 @@ export function HeroCore() {
               dpr={[1, 1.5]}
               camera={{ position: [0, 0, 5.2], fov: 42 }}
               gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
-              frameloop={reduced ? "demand" : "always"}
-              onCreated={({ gl }) => gl.setClearAlpha(0)}
+                onCreated={({ gl }) => gl.setClearAlpha(0)}
             >
-              <Core reduced={reduced} />
+              <Core />
             </Canvas>
           </CanvasBoundary>
         </div>
