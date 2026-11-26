@@ -1,8 +1,8 @@
 <div align="center">
 
-<img src="docs/assets/banner.svg" alt="grindr-plus-plus-mt" width="100%">
+<img src="docs/assets/banner.svg" alt="grindr-plus-plus-mod-version-spoof" width="100%">
 
-# grindr-plus-plus-mt
+# grindr-plus-plus-mod-version-spoof
 
 **The mod, measured.** A fork of Grindr++ that bakes the version spoof into the build,
 rewrites Grindr's own A/B experiments client-side, and fixes the album path upstream
@@ -10,9 +10,9 @@ left broken — with numbers from a physical device, not vibes.
 
 `GPL-3.0` · `Kotlin / LSPatch module` · `signed: mtantongco` · `not affiliated with Grindr LLC`
 
-[**Live site**](https://marktantongco.github.io/grindr-plus-plus-mt/) ·
-[**Docs**](https://marktantongco.github.io/grindr-plus-plus-mt/ARCHITECTURE.html) ·
-[**Releases**](https://github.com/marktantongco/grindr-plus-plus-mt/releases) ·
+[**Live site**](https://marktantongco.github.io/grindr-plus-plus-mod-version-spoof/) ·
+[**Docs**](https://marktantongco.github.io/grindr-plus-plus-mod-version-spoof/ARCHITECTURE.html) ·
+[**Releases**](https://github.com/marktantongco/grindr-plus-plus-mod-version-spoof/releases) ·
 [**Vercel mirror**](https://web-theta-livid-46.vercel.app)
 
 </div>
@@ -45,7 +45,7 @@ No terminal. ~15 minutes.
 
 → [INSTALL-BEGINNER](docs/INSTALL-BEGINNER.md)
 
-Files you need are on the [release page](https://github.com/marktantongco/grindr-plus-plus-mt/releases). Uninstall stock Grindr first —
+Files you need are on the [release page](https://github.com/marktantongco/grindr-plus-plus-mod-version-spoof/releases). Uninstall stock Grindr first —
 the signature differs.
 
 </td><td width="33%" valign="top">
@@ -109,7 +109,7 @@ the things that decide whether it survives contact with a real device.
 
 | Option | Login gate cleared | A/B override | Chat albums | Maintained | Evidence shipped |
 |---|---|---|---|---|---|
-| **grindr-plus-plus-mt** (this) | ✅ compiled default | ✅ JWT rewrite + flag console | ✅ `v2` + gate + DB fallback | ✅ Nov-2026 | ✅ device log, frame-indexed |
+| **grindr-plus-plus-mod-version-spoof** (this) | ✅ compiled default | ✅ JWT rewrite + flag console | ✅ `v2` + gate + DB fallback | ✅ Nov-2026 | ✅ device log, frame-indexed |
 | `fatterdev/grindr-plus-plus` (parent) | ⚠️ config-time only | ❌ | ❌ `v1`, throws on `404` body | ⚠️ | ❌ |
 | `gustarmartins/GrindrPlus` v5.0.1 | ⚠️ config-time only | ❌ | ❌ | ❌ frozen at v26.0.1 | ❌ |
 | `R0rt1z2/GrindrPlus` | ❌ | ❌ | ❌ | ❌ archived | ❌ |
@@ -205,7 +205,7 @@ Every row is a file plus a line. Audit any of them.
 
 ## 5. Download and install
 
-Latest release: **`GPlus_v5.0.1-26.24.0spoof-mtantongco-release.apk`** — see [Releases](https://github.com/marktantongco/grindr-plus-plus-mt/releases).
+Latest release: **`GPlus_v5.0.1-26.24.0spoof-mtantongco-release.apk`** — see [Releases](https://github.com/marktantongco/grindr-plus-plus-mod-version-spoof/releases).
 Release notes: [RELEASE-NOTES-v5.0.1-26.24.0.md](RELEASE-NOTES-v5.0.1-26.24.0.md).
 
 ```text
