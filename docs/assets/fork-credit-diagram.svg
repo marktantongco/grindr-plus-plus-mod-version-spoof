@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="600" viewBox="0 0 1200 600">
   <rect width="1200" height="600" fill="#12100f"/>
   <rect x="60" y="60" width="1080" height="480" rx="24" fill="#1d1613" stroke="#ff8a3d" stroke-width="2"/>
-  <text x="600" y="110" text-anchor="middle" font-family="ui-monospace,monospace" font-size="28" fill="#fff">grindr-plus-plus-mt — Lineage & Credit</text>
+  <text x="600" y="110" text-anchor="middle" font-family="ui-monospace,monospace" font-size="28" fill="#fff">grindr-plus-plus-mod-version-spoof — Lineage & Credit</text>
   <text x="600" y="145" text-anchor="middle" font-family="sans-serif" font-size="16" fill="#a08b7f">Fork of Grindr++ with compiled spoof 26.24.0/195444 and client-side JWT experiment engine</text>
   <g font-family="ui-monospace,monospace" font-size="14" fill="#f4ece6">
     <rect x="100" y="190" width="280" height="80" rx="12" fill="#241a15" stroke="#33241c"/>
@@ -24,7 +24,7 @@
     <text x="440" y="375" fill="#a08b7f">ab40f4a • spoof + JWT engine</text>
     <polygon points="700,360 730,360 715,340" fill="#ff8a3d"/>
     <rect x="740" y="320" width="280" height="80" rx="12" fill="#1d1613" stroke="#ff8a3d" stroke-width="2"/>
-    <text x="760" y="350" fill="#ff8a3d">grindr-plus-plus-mt</text>
+    <text x="760" y="350" fill="#ff8a3d">grindr-plus-plus-mod-version-spoof</text>
     <text x="760" y="375" fill="#ffb887">current release</text>
   </g>
   <text x="600" y="480" text-anchor="middle" font-size="13" fill="#8d7a70">GPL-3.0 • Not affiliated with Grindr LLC • Credit lineage preserved in NOTICE</text>

@@ -91,7 +91,7 @@ export default function Page() {
                 <p className="segment__state">subscription</p>
               </RiseItem>
               <RiseItem className="segment" data-state="dim">
-                <p className="segment__term">grindr-plus-plus-mt</p>
+                <p className="segment__term">grindr-plus-plus-mod-version-spoof</p>
                 <p className="segment__body">
                   Spoofed build, rewritten experiment claims, five client-side
                   primitives, multi-clone. GPL-3.0.
@@ -231,7 +231,7 @@ export default function Page() {
         </div>
         <nav className="credit__links" aria-label="Sources">
           <a href="https://github.com/Guillerrmo/GrindrPlus">Upstream GrindrPlus</a>
-          <a href="https://github.com/marktantongco/grindr-plus-plus-mt">
+          <a href="https://github.com/marktantongco/grindr-plus-plus-mod-version-spoof">
             This fork&rsquo;s source
           </a>
         </nav>

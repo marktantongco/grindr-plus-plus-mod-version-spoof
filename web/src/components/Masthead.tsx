@@ -20,9 +20,9 @@ export function Masthead() {
   return (
     <header className="masthead" data-scrolled={scrolled}>
       <div className="masthead__inner">
-        <a className="lockup" href="#main" aria-label="grindr-plus-plus-mt, skip to content">
+        <a className="lockup" href="#main" aria-label="grindr-plus-plus-mod-version-spoof, skip to content">
           <Mark className="lockup__mark" />
-          <span className="lockup__word">grindr-plus-plus-mt</span>
+          <span className="lockup__word">grindr-plus-plus-mod-version-spoof</span>
         </a>
         <span className="masthead__status">spoof 26.24.0</span>
         <nav className="masthead__nav" aria-label="Sections">
