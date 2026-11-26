@@ -251,19 +251,13 @@ display,
   .masthead__nav {
     gap: 0 var(--space-3);
   }
-  /* one accent fill above the fold at the narrowest widths (A23 accent budget) */
-  .hero__actions .btn--primary {
-    background: var(--color-panel);
-    color: var(--color-ink);
-    border-color: var(--color-rule-strong);
-  }
-  .hero__actions .btn--primary:hover {
-    background: var(--color-panel-raised);
-    border-color: var(--color-rule-strong);
-    border-bottom-color: var(--color-rule-strong);
-  }
-  .hero__actions .btn--primary:active {
-    background: var(--color-panel);
+  /* the narrow fold repainted the CTA as a panel to save accent budget, which
+     left it a grey box beside a bare text link; it keeps the accent fill now
+     (A23 counts one accent, and there is exactly one CTA) */
+  .hero__actions > a:not(.btn) {
+    border: 1px solid var(--color-rule-strong);
+    border-radius: var(--radius-control);
+    padding-inline: var(--space-4);
   }
 }
 
@@ -384,184 +378,6 @@ display,
   max-width: var(--measure-page);
   margin-inline: auto;
   padding-inline: var(--gutter);
-}
-
-/* hero (P-FN-09) */
-
-.hero {
-  /* owns the fold: content must fill the first screen or a void opens (A25/GS5) */
-  /* explicit height, not min-height: a min-height grid sizes rows to content and
-     drops the slack at the bottom, which is exactly the void A25/GS5 catches */
-  height: calc(100svh - var(--size-masthead)); /* D-P4-9, G6 */
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  /* copy is fixed, the figure takes the remaining fold. 1fr on a 844px phone
-     collapsed the figure to a 160px sliver cut by the fold (A25/GS5); an
-     auto-sized row lets the 34svh cap decide instead of the leftover space. */
-  grid-template-rows: auto min(34svh, 300px);
-  align-content: stretch;
-  padding-block: var(--space-9) var(--space-11); /* D-P4-2, G44 bottom > 1.3x top */
-  gap: var(--space-6);
-}
-
-.hero__copy {
-  position: relative;
-  z-index: 2;
-  display: grid;
-  /* space-between already distributes the slack; a fixed 32px gap on top of it left a
-     109px bare strip between the h1 and the lede, which was the last >40% band (A25) */
-  row-gap: 0;
-  /* the copy column is 559px: rows must fill it, not sit as short islands in it.
-     space-between parked all slack in two gaps (59% empty bands); auto rows let the
-     grid distribute it instead. */
-  grid-template-columns: minmax(0, 1fr);
-  grid-auto-rows: auto;
-  align-content: stretch;
-  justify-items: stretch; /* the rule under the label and above the meta needs full width */
-  padding-top: var(--space-6);
-}
-
-/* the label and the meta each carry a rule across the copy column, so the top and
-   bottom bands of the fold hold real ink instead of one short line (A25) */
-.hero__copy > .label {
-  border-bottom: 1px solid var(--color-rule);
-  padding-bottom: var(--space-3);
-}
-
-/* the h1 row carries a little bottom breathing room so the lede does not butt against
-   the headline now that rows are stretched (the slack is still distributed, not parked) */
-.hero__copy > .display {
-  padding-bottom: var(--space-3);
-}
-
-.hero__actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2) var(--space-5);
-  /* a bare 146px button row left 74% of the 559px copy column empty (A25 bands 7-8).
-     The secondary link takes the rest of the line, so the row carries real width.
-     No rule here: the meta rule below already closes the column, and a third rule in
-     the lower half read as clutter. */
-  padding-bottom: var(--space-4);
-}
-
-/* the primary action fills the row and the secondary link sits at its far end, so the
-   row spans the whole 559px column instead of leaving 47% of it bare (A25 bands 6-7) */
-.hero__actions > .btn {
-  flex: 1 1 auto;
-  justify-content: center;
-}
-
-.hero__actions > a:not(.btn) {
-  flex: 0 0 auto;
-  justify-content: flex-end;
-}
-
-.hero__actions > a:not(.btn) {
-  display: inline-flex;
-  align-items: center;
-  min-height: var(--size-control);
-}
-
-.hero__meta {
-  font-family: var(--font-display);
-  font-size: 0.8rem;
-  color: var(--color-muted);
-  max-width: none; /* 52ch capped it short of the column, so the bottom bands stayed empty (A25) */
-  margin: 0;
-  border-top: 1px solid var(--color-rule);
-  padding-top: var(--space-3);
-}
-
-.hero__figure {
-  position: relative;
-  aspect-ratio: 16 / 10;
-  /* 52svh is taller than the fold on phones once masthead+copy are subtracted;
-     the panel is capped at 34svh so it can never outgrow its grid track.
-     On tall desktop folds the 600px cap left the last 216px of the fold empty
-     (A25 100% empty bands 8-9), so the cap follows the fold height instead. */
-  max-height: max(34svh, min(600px, calc(100svh - 420px)));
-  margin-inline: auto;
-  width: 100%;
-  border: 1px solid var(--color-rule);
-  border-radius: var(--radius-panel);
-  overflow: hidden;
-  background: var(--color-panel);
-}
-
-.hero__poster,
-.hero__canvas {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-}
-
-.hero__poster {
-  object-fit: cover;
-  transition: opacity var(--dur-reveal) var(--ease);
-}
-
-.hero__figure[data-canvas="live"] .hero__poster {
-  opacity: 0;
-}
-
-.hero__figure[data-canvas="failed"] .hero__poster {
-  opacity: 1;
-}
-
-/* narrow folds: the hero padding and the figure track must both shrink, otherwise
-   96+160 of padding plus a 287px panel overflow an 844px screen (A25/GS5) */
-@media (max-width: 899px) {
-  .hero {
-    padding-block: var(--space-8) var(--space-9); /* 64/96 = 1.5x, D-P4-2 ratio kept */
-    gap: var(--space-5);
-    /* a 1fr track honours the aspect-ratio minimum contribution (44px), so the row is
-       a fixed min(34svh,300px) and the panel simply fills it */
-    grid-template-rows: auto min(34svh, 300px);
-  }
-  .hero__copy {
-    padding-top: var(--space-4);
-  }
-  .hero__figure {
-    aspect-ratio: auto;
-    max-height: none;
-    height: 100%;
-    min-height: 0;
-  }
-}
-
-/* short folds (700px phones, landscape): the block padding alone eats 256px of a 636px
-   hero; collapse to 48/80 = 1.67x so the D-P4-2 bottom>1.3x top ratio survives */
-@media (max-height: 760px) {
-  .hero {
-    padding-block: var(--space-7) var(--space-9);
-    gap: var(--space-4);
-    /* the track must shrink with the fold, not just the padding: at 700px height the
-       34svh panel + 128px padding + copy still overhung by 72px (A25/GS5) */
-    grid-template-rows: auto min(28svh, 240px);
-  }
-  .hero__actions {
-    column-gap: var(--space-3);
-  }
-  .hero__copy .prose {
-    font-size: 0.94rem;
-    line-height: 1.5;
-  }
-}
-
-/* very short folds (320x700, 360x640): copy has to give ground too, or the
-   panel is pushed under the fold no matter how small the track gets */
-@media (max-height: 700px) {
-  .hero {
-    padding-block: var(--space-6) var(--space-7); /* 32/48 = 1.5x, D-P4-2 kept */
-    grid-template-rows: auto min(23svh, 190px);
-  }
-  .hero__copy .prose {
-    font-size: 0.88rem;
-    line-height: 1.45;
-  }
 }
 
 /* stack */
@@ -984,31 +800,17 @@ display,
 }
 
 @media (min-width: 900px) {
-  .hero {
-    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
-    /* stretch both cells to the fold; aspect-ratio is disabled so the row height,
-       not the column width, decides the figure (A25/GS5) */
-    grid-template-rows: minmax(0, 1fr);
-    align-items: stretch;
-  }
+  /* the fold is now a full-bleed stage with the copy floating on it, so the
+     two-column grid moved into .hero__copy and the stage owns the viewport */
+  /* the plate now owns its own layout in stage.css (bottom-anchored block, label
+     above the lead cluster). This block only keeps the fold two-column split. */
   .hero__copy {
-    /* stretch, not center or space-between: centring left the top and bottom bands
-       59% empty, and space-between parked the same 59% in two internal gaps (A25).
-       Stretch distributes the slack across every row, so no band is left bare. */
-    align-content: stretch;
-    grid-auto-rows: 1fr;
-    padding-block: 0;
+    grid-template-columns: minmax(0, 0.92fr) minmax(0, 1fr);
+    column-gap: var(--space-9);
   }
-  .hero__figure {
-    aspect-ratio: auto; /* beats the base 16/10 that otherwise caps height at width*0.625 */
-    /* the panel spans the whole hero row. A 600px cap left the bottom 216px of a 1080
-       fold empty (A25), and a shorter panel also left the top and bottom bands carried
-       by the copy column alone, where the single-column floor is 54.9% empty. */
-    max-height: none;
-    height: 100%;
-    align-self: stretch;
-    margin-block: 0;
-    min-height: 0;
+  .hero__copy > .label,
+  .hero__copy > .hero__lead {
+    grid-column: 1;
   }
   .stack {
     grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);

@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import "./../styles/tokens.css";
-import "./../styles/app.css";
+import "./globals.css";
 
 export const metadata: Metadata = {
   title: "grindr-plus-plus-mt — the mod, measured",

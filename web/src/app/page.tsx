@@ -1,63 +1,64 @@
 import { Shell } from "../components/Shell";
-import { HeroCore } from "../components/HeroCore";
-import { ScrollEffects } from "../components/ScrollEffects";
+import { HeroStage } from "../components/HeroStage";
 import { Measuring } from "../components/Measuring";
+import { Rise, RiseItem, RiseList } from "../components/Stage";
 import { features } from "../content/features";
 import { lineage, meta } from "../content/credit";
 
 export default function Page() {
   return (
     <Shell>
-      <ScrollEffects />
-
-      {/* 1 — hero (P-FN-09) */}
-      <section className="section page hero" aria-labelledby="hero-title">
-        <div className="hero__copy">
-          <p className="label">GPL-3.0 · fork of a fork · client-side only</p>
-          <h1 className="display" id="hero-title">
-            The mod, measured.
-          </h1>
-          <p className="prose">
-            An open-source client fork for Grindr: spoofed build, rewritten
-            experiment claims, and five primitives that work below the app.
-            Numbers where we have them, empty lamps where we do not.
-          </p>
-          <div className="hero__actions">
-            <a className="btn btn--primary" href="#install">
-              Get the build
-            </a>
-            <a href="#credit">Source on GitHub</a>
+      {/* 1 — fold. Copy is server-painted; only the stage island is client. */}
+      <HeroStage>
+        <section className="section page hero" aria-labelledby="hero-title">
+          <div className="hero__copy">
+            <p className="label">GPL-3.0 · fork of a fork · client-side only</p>
+            <div className="hero__lead">
+              <h1 className="display" id="hero-title">
+                The mod, measured.
+              </h1>
+              <p className="prose">
+                An open-source client fork for Grindr: spoofed build, rewritten
+                experiment claims, and five primitives that work below the app.
+                Numbers where we have them, empty lamps where we do not.
+              </p>
+              <div className="hero__actions">
+                <a className="btn btn--primary" href="#install">
+                  Get the build
+                </a>
+                <a href="#credit">Source on GitHub</a>
+              </div>
+              <p className="hero__meta">
+                this fork&rsquo;s build 26.24.0 / 195444 — upstream marks 26.23.0+
+                PairIP untested
+              </p>
+            </div>
           </div>
-          <p className="hero__meta">
-            this fork&rsquo;s build 26.24.0 / 195444 — upstream marks 26.23.0+
-            PairIP untested
-          </p>
-        </div>
-        <HeroCore />
-      </section>
+        </section>
+      </HeroStage>
 
       {/* 2 — stack */}
       <section className="section page stack" aria-labelledby="stack-title">
-        <div data-reveal>
+        <Rise>
           <p className="label">Built on</p>
           <h2 className="title" id="stack-title">
             Rails that don&rsquo;t move.
           </h2>
-        </div>
-        <ul className="stack__slabs" data-parallax="-8">
-          <li className="stack__slab">
+        </Rise>
+        <RiseList className="stack__slabs">
+          <RiseItem className="stack__slab" data-parallax="-8">
             <span>Next.js App Router</span>
             <small>one route, server-painted copy</small>
-          </li>
-          <li className="stack__slab">
+          </RiseItem>
+          <RiseItem className="stack__slab" data-parallax="-8">
             <span>React Three Fiber + drei</span>
             <small>procedural geometry, no payload</small>
-          </li>
-          <li className="stack__slab">
-            <span>GSAP ScrollSmoother + Remotion</span>
-            <small>depth ordering, pre-rendered cut</small>
-          </li>
-        </ul>
+          </RiseItem>
+          <RiseItem className="stack__slab" data-parallax="-8">
+            <span>GSAP ScrollTrigger + Framer Motion</span>
+            <small>one owns scroll, one owns the overlay</small>
+          </RiseItem>
+        </RiseList>
       </section>
 
       <div className="void" aria-hidden="true" />
@@ -65,39 +66,39 @@ export default function Page() {
       {/* 3 — compare, the pinned centrepiece (C-3, no-preset) */}
       <section className="section page stage" id="compare" aria-labelledby="compare-title">
         <div className="stage__sticky">
-          <div>
+          <Rise>
             <p className="label">Three tiers, one device</p>
-            <h2 className="title" id="compare-title" data-reveal>
+            <h2 className="title" id="compare-title">
               What everyone gets. What money buys. What the source gives.
             </h2>
-          </div>
+          </Rise>
           <div>
-            <ol className="stage__list">
-              <li className="segment" data-state="dim">
+            <RiseList className="stage__list">
+              <RiseItem className="segment" data-state="dim">
                 <p className="segment__term">Grindr, free</p>
                 <p className="segment__body">
                   Ad-supported tier. Chat, browse, one album path, capped daily
                   boosts.
                 </p>
                 <p className="segment__state">baseline</p>
-              </li>
-              <li className="segment" data-state="dim">
+              </RiseItem>
+              <RiseItem className="segment" data-state="dim">
                 <p className="segment__term">Grindr Xtra</p>
                 <p className="segment__body">
                   Paid tier as the mod projects describe it: more reach, more
                   visibility, fewer caps.
                 </p>
                 <p className="segment__state">subscription</p>
-              </li>
-              <li className="segment" data-state="dim">
+              </RiseItem>
+              <RiseItem className="segment" data-state="dim">
                 <p className="segment__term">grindr-plus-plus-mt</p>
                 <p className="segment__body">
                   Spoofed build, rewritten experiment claims, five client-side
                   primitives, multi-clone. GPL-3.0.
                 </p>
                 <p className="segment__state">client-side</p>
-              </li>
-            </ol>
+              </RiseItem>
+            </RiseList>
             <p className="limits">
               <span className="limits__key">server-enforced, no client fix</span>
               <span>Viewed Me</span>
@@ -111,33 +112,33 @@ export default function Page() {
 
       {/* 4 — performance (C-4, P-PR-68) */}
       <section className="section page perf" id="performance" aria-labelledby="perf-title">
-        <div data-reveal>
+        <Rise>
           <p className="label">Measured, not claimed</p>
           <h2 className="title" id="perf-title">
             Numbers, not vibes.
           </h2>
-        </div>
-        <div className="perf__grid">
-          <div className="stat" data-parallax="-6">
+        </Rise>
+        <RiseList className="perf__grid">
+          <RiseItem className="stat" data-parallax="-6">
             <p className="stat__def">chat open · composer painted</p>
             <p className="stat__value num">33 ms</p>
             <p className="stat__cond">
               8/8 samples · one 30 fps frame · N=8 of 18 tries
             </p>
-          </div>
-          <div className="stat" data-parallax="-6">
+          </RiseItem>
+          <RiseItem className="stat" data-parallax="-6">
             <p className="stat__def">chat open · photo decoded</p>
             <p className="stat__value num">1.68 s</p>
             <p className="stat__cond">
               median of 4 samples · content settle, not the composer
             </p>
-          </div>
-          <div className="stat stat--measuring" data-parallax="-6">
+          </RiseItem>
+          <RiseItem className="stat stat--measuring" data-parallax="-6">
             <p className="stat__def">profile open · official client</p>
             <p className="stat__value num">measuring</p>
             <Measuring />
-          </div>
-        </div>
+          </RiseItem>
+        </RiseList>
         <p className="perf__note">
           Captured on a physical device at 30 fps, latency read from the frame index.
           The composer paints in a single frame; the photo behind it keeps decoding,
@@ -148,31 +149,31 @@ export default function Page() {
 
       {/* 5 — features drawer (C-5) */}
       <section className="section page features" id="features" aria-labelledby="features-title">
-        <div data-reveal>
+        <Rise>
           <p className="label">Below the app, above the server</p>
           <h2 className="title" id="features-title">
             Eight primitives.
           </h2>
-        </div>
-        <ul className="features__track">
+        </Rise>
+        <RiseList className="features__track">
           {features.map((f) => (
-            <li className="feature" key={f.name}>
+            <RiseItem className="feature" key={f.name}>
               <h3 className="feature__name">{f.name}</h3>
               <p className="feature__body">{f.body}</p>
               <p className="feature__state">{f.state}</p>
-            </li>
+            </RiseItem>
           ))}
-        </ul>
+        </RiseList>
       </section>
 
       {/* 6 — install (C-6, P-FN-07) */}
       <section className="section page install" id="install" aria-labelledby="install-title">
-        <div data-reveal>
+        <Rise>
           <p className="label">Five steps</p>
           <h2 className="title" id="install-title">
             Install it.
           </h2>
-        </div>
+        </Rise>
         <ol className="steps">
           <li className="step">
             <p className="step__head">

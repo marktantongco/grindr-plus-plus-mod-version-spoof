@@ -1,0 +1,277 @@
+/* Fold stage + the motion layer. Consumes tokens only (G48).
+
+   Structure: .stage-shell wraps .hero__stage (a full-viewport, sticky-cancelled
+   scene plate) and .hero (the copy that scrolls over it). The plate is what GSAP
+   pins and scrubs; the copy is plain flow content. Three layers stay separated:
+   canvas under, DOM copy above, rails/badge as chrome between. */
+
+.stage-shell {
+  position: relative;
+  isolation: isolate;
+}
+
+.hero__stage {
+  position: relative;
+  height: calc(100svh - var(--size-masthead));
+  z-index: 0;
+  overflow: hidden;
+  background: var(--color-panel);
+  border-bottom: 1px solid var(--color-rule);
+  /* own layer: keeps the blur of the rails off the copy's paint */
+  contain: paint;
+}
+
+.hero__poster,
+.hero__canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.hero__poster {
+  object-fit: cover;
+  transition: opacity var(--dur-reveal) var(--ease);
+}
+
+.hero__stage[data-canvas="live"] .hero__poster {
+  opacity: 0;
+}
+
+/* scan rails: three hairlines that GSAP drifts at different speeds */
+.hero__rails {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  display: grid;
+  grid-template-rows: repeat(3, 1fr);
+  padding-inline: var(--gutter);
+}
+
+.hero__rails span {
+  border-top: 1px solid var(--color-rule);
+  opacity: 0.7;
+}
+
+.hero__rails span:nth-child(2) {
+  border-top-color: var(--color-rule-strong);
+  opacity: 0.35;
+}
+
+/* corner badge — the only chrome on the plate */
+.hero__badge {
+  position: absolute;
+  right: var(--gutter);
+  /* the badge sits on the plate's bottom-right corner, inside the fold edge */
+  bottom: var(--space-6);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-rule-strong);
+  border-radius: var(--radius-pill);
+  font-family: var(--font-display);
+  font-size: 0.62rem;
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--color-ink-dim);
+  background: color-mix(in srgb, var(--color-bg) 72%, transparent);
+  /* the one blur on the page; it sits on 96x28px, not a full plate */
+  backdrop-filter: blur(6px);
+}
+
+.hero__badge-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent);
+}
+
+/* The copy rides ON the pinned plate. It is taken out of flow and pinned to the
+   shell box so ScrollTrigger's pin-spacer padding can never push it down, and it is
+   bottom-anchored inside one fold. The plate stays the backdrop, the copy the subject. */
+.hero {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  /* one row, forced to the full fold: an auto row would collapse to the plate's
+     content height and align-content would then pack it to the bottom */
+  grid-template-rows: minmax(0, 1fr);
+  align-items: stretch;
+  gap: 0;
+  height: calc(100svh - var(--size-masthead));
+  padding-block: var(--space-6) var(--space-8);
+}
+
+.hero__copy {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  /* two clusters, not space-between: the label pins to the top, the headline
+     block pins to the bottom, and one flexible spacer row between them absorbs
+     the fold. space-between stranded the eyebrow in dead air. */
+  /* label + lead are one bottom-anchored block. The plate hugs them instead of
+     filling the fold: a full-height 88%-opaque pane blurred the scene behind it
+     into an unreadable smear. The scene now keeps the whole upper band. */
+  grid-template-rows: auto auto;
+  align-content: end;
+  grid-auto-flow: row;
+  justify-content: stretch;
+  row-gap: var(--space-4);
+  padding: var(--space-6) var(--space-6) var(--space-5);
+  border: 1px solid var(--color-rule-strong);
+  border-radius: var(--radius-panel);
+  /* the copy plate needs its own surface or the particle field shows through the
+     prose and the 1.55 line-height stops reading */
+  /* 93% + a tighter blur: at 88% the particle field read through the prose as
+     soft blobs and the plate edge showed a visible blur seam */
+  background: color-mix(in srgb, var(--color-bg) 93%, transparent);
+  backdrop-filter: blur(7px);
+  max-width: var(--measure-page);
+  width: 100%;
+  /* bottom-anchored: the plate is sized by its own copy, not the fold */
+  align-self: end;
+  margin-top: auto;
+}
+
+/* the eyebrow rides the plate's top edge as a tab instead of sitting inside it
+   with a rule: inside, it read as a stranded first row */
+.hero__copy > .label {
+  border-bottom: 1px solid var(--color-rule);
+  padding-bottom: var(--space-3);
+}
+
+/* the bottom cluster: headline → prose → actions → meta, tightly stacked so the
+   eyebrow and the headline read as one block instead of two stranded ends */
+.hero__lead {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-auto-rows: auto;
+  gap: var(--space-4);
+  align-content: end;
+  /* the plate fills the fold but the cluster rides the lower half, so the scene
+     keeps the upper band and the copy reads as one block */
+  padding-bottom: var(--space-2);
+}
+
+.hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-5);
+  padding-bottom: var(--space-2);
+}
+
+.hero__actions > .btn {
+  /* the CTA hugs its label; a 1 1 auto flex let it stretch to the whole measure
+     and the GitHub link sat orphaned at the far right */
+  flex: 0 0 auto;
+  justify-content: center;
+  min-width: 14rem;
+}
+
+.hero__actions > a:not(.btn) {
+  /* same control height and optical weight as the CTA, no fill: a bare text link
+     beside a filled button read as an afterthought */
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--size-control);
+  padding-inline: var(--space-4);
+  border: 1px solid var(--color-rule-strong);
+  border-radius: var(--radius-control);
+  font-family: var(--font-display);
+  font-size: 0.68rem;
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--color-ink-dim);
+  transition: color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
+}
+
+.hero__actions > a:not(.btn):hover {
+  color: var(--color-ink);
+  border-color: var(--color-ink-dim);
+}
+
+.hero__meta {
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  color: var(--color-muted);
+  margin: 0;
+  border-top: 1px solid var(--color-rule);
+  padding-top: var(--space-3);
+}
+
+/* ---------- narrow folds: plate keeps the viewport, copy loses padding ---- */
+
+@media (max-width: 899px) {
+  .hero {
+    padding-block: var(--space-8) var(--space-9);
+  }
+  .hero__copy {
+    padding: var(--space-5) var(--space-5) var(--space-4);
+    max-width: none;
+  }
+  .hero__rails {
+    grid-template-rows: repeat(2, 1fr);
+  }
+  .hero__rails span:nth-child(3) {
+    display: none;
+  }
+}
+
+@media (max-width: 560px) {
+  .hero__copy {
+    /* the blur is the one real mobile cost; on a phone the plate is opaque
+       enough to read without it (Spatial Glass constraint, mitigated) */
+    backdrop-filter: none;
+    background: color-mix(in srgb, var(--color-bg) 94%, transparent);
+    padding: var(--space-4);
+  }
+  .hero__badge {
+    display: none;
+  }
+}
+
+/* the secondary link wraps under the CTA well before 420 — the pair stops
+   fitting side by side around 480 */
+@media (max-width: 480px) {
+  .hero__actions {
+    gap: var(--space-2) var(--space-3);
+  }
+  .hero__actions .btn,
+  .hero__actions > a:not(.btn) {
+    flex: 1 1 100%;
+  }
+  .hero__actions > a:not(.btn) {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-height: 760px) {
+  .hero {
+    padding-block: var(--space-7) var(--space-9);
+  }
+  .hero__copy .prose {
+    font-size: 0.94rem;
+    line-height: 1.5;
+  }
+}
+
+@media (max-height: 700px) {
+  .hero {
+    padding-block: var(--space-6) var(--space-7);
+  }
+  .hero__copy .prose {
+    font-size: 0.88rem;
+    line-height: 1.45;
+  }
+}
+
+/* reduced motion: the plate stops being sticky, everything stacks in flow */
+html[data-motion="off"] .hero__stage {
+  position: relative;
+  top: 0;
+}
+

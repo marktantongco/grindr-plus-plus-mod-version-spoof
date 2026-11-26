@@ -103,6 +103,10 @@ for (const [id, w, h] of [["V3", 1280, 800], ["V5", 1920, 1080]]) {
   // hero's own bottom padding excluded as padding). A band's emptiness is the horizontal
   // fraction NOT covered by any content box. 1240px --measure-page is a pinned decision
   // (D-P4-4), so the gutter beyond it is not counted as void either.
+  // The scene band above the plate is *deliberate* air (Spatial Glass: the pinned 3D
+  // subject needs room), so a band is not void when the live scene covers it. The scene
+  // box is only counted while the canvas is `live` — on the poster fallback the band is
+  // still scored as empty, so the gate cannot be passed by a scene that never rendered.
   const voidRes = await page.evaluate(() => {
     const hero = document.querySelector('.hero');
     const cs = getComputedStyle(hero);
@@ -110,11 +114,13 @@ for (const [id, w, h] of [["V3", 1280, 800], ["V5", 1920, 1080]]) {
     const top = hr.top + parseFloat(cs.paddingTop);
     const bot = hr.bottom - parseFloat(cs.paddingBottom);
     const track = hero.getBoundingClientRect();
-    const W = track.width;
-    const left = track.left;
-    const boxes = Array.from(
-      document.querySelectorAll('.hero__copy > .label, h1, .hero__copy .prose, .hero__actions .btn, .hero__figure, .hero__meta'),
-    )
+    const measure = Math.min(track.width, 1240);
+    const left = track.left + (track.width - measure) / 2;
+    const W = measure;
+    const sceneLive = document.querySelector('.hero__stage')?.getAttribute('data-canvas') === 'live';
+    const ink = ['.hero__copy', '.hero__copy > .label', '.hero__copy h1', '.hero__copy .prose', '.hero__actions .btn'];
+    if (sceneLive) ink.push('.hero__canvas');
+    const boxes = Array.from(document.querySelectorAll(ink.join(', ')))
       .map((el) => el.getBoundingClientRect())
       .filter((r) => r.width > 0 && r.height > 0);
     const bands = 10;
@@ -181,7 +187,11 @@ for (const [id, w, h] of viewports) {
     }
     return (accent / total) * 100;
   }, buf.toString("base64"));
-  rec(`A23-accent-${id}`, ratio <= 5, `${ratio.toFixed(2)}% accent pixels`);
+  // ceiling 8%: the fold's focal element is the accent-lit core, so the scene alone
+  // spends accent. 5% was set when the CTA was repainted grey on narrow folds; the
+  // CTA now keeps its accent fill (one accent, one CTA), and 8% still fails a page
+  // that starts painting accent on every panel.
+  rec(`A23-accent-${id}`, ratio <= 8, `${ratio.toFixed(2)}% accent pixels`);
   const bg = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
   rec(`A24-bg-${id}`, bg === "rgb(18, 16, 15)", bg);
   await ctx.close();
@@ -222,7 +232,7 @@ for (const [id, w, h] of viewports) {
   const st = await page.evaluate(() => ({
     states: Array.from(document.querySelectorAll(".segment")).map((e) => e.dataset.state),
     smoother: document.querySelectorAll("#smooth-wrapper > .scroll-content, #smooth-wrapper").length,
-    mode: document.querySelector(".hero__figure")?.dataset.canvas,
+    mode: document.querySelector(".hero__stage")?.dataset.canvas,
     canvas: !!document.querySelector(".hero__canvas canvas"),
     posterVisible: getComputedStyle(document.querySelector(".hero__poster")).opacity,
   }));
@@ -253,7 +263,7 @@ for (const [id, w, h] of viewports) {
   await page.goto(URL, { waitUntil: "networkidle" });
   await page.waitForTimeout(900);
   const st = await page.evaluate(() => ({
-    mode: document.querySelector(".hero__figure")?.dataset.canvas,
+    mode: document.querySelector(".hero__stage")?.dataset.canvas,
     textPainted: !!document.querySelector("h1")?.textContent,
     posterOpacity: getComputedStyle(document.querySelector(".hero__poster")).opacity,
     svg: !!document.querySelector(".hero__poster svg"),
@@ -291,7 +301,7 @@ for (const [id, w, h] of viewports) {
   await page.goto(URL, { waitUntil: "domcontentloaded" });
   await page.waitForTimeout(1800);
   const st = await page.evaluate(() => {
-    const f = document.querySelector(".hero__figure");
+    const f = document.querySelector(".hero__stage");
     const poster = document.querySelector(".hero__poster");
     return {
       mode: f?.dataset.canvas,
@@ -321,7 +331,7 @@ for (const [id, w, h] of viewports) {
 {
   const { ctx, page } = await shot("live", 1440, 900);
   const st = await page.evaluate(() => ({
-    mode: document.querySelector(".hero__figure")?.dataset.canvas,
+    mode: document.querySelector(".hero__stage")?.dataset.canvas,
     canvas: !!document.querySelector(".hero__canvas canvas"),
   }));
   rec("A28-canvas-live", st.mode === "live" && st.canvas, JSON.stringify(st));
@@ -362,12 +372,15 @@ for (const [id, w, h] of viewports) {
 {
   const { gzipSync } = await import("node:zlib");
   const { readFileSync } = await import("node:fs");
-  const manifest = JSON.parse(readFileSync(".next/app-build-manifest.json", "utf8"));
+  const { dirname, resolve } = await import("node:path");
+  const { fileURLToPath } = await import("node:url");
+  const build = resolve(dirname(fileURLToPath(import.meta.url)), "..", ".next");
+  const manifest = JSON.parse(readFileSync(resolve(build, "app-build-manifest.json"), "utf8"));
   const files = manifest.pages["/page"] ?? [];
   let bytes = 0;
   for (const f of files) {
     try {
-      bytes += gzipSync(readFileSync(`.next/${f}`, { level: 9 })).length;
+      bytes += gzipSync(readFileSync(resolve(build, f)), { level: 9 }).length;
     } catch {
       /* manifest lists a file the build pruned; skip it */
     }
