@@ -360,6 +360,16 @@ for (const [id, w, h] of viewports) {
     window.requestAnimationFrame = (cb) => raf((t) => { window.__dc = 0; cb(t); });
   });
   await page.goto(URL, { waitUntil: "networkidle" });
+  // the canvas is client-probed; a cold server can still be painting the poster
+  // when the first frame lands. wait for the live flag before sampling, else a
+  // slow mount reads 0 draw calls and flakes.
+  await page
+    .waitForFunction(
+      () => document.querySelector(".hero__stage")?.getAttribute("data-canvas") === "live",
+      null,
+      { timeout: 8000 },
+    )
+    .catch(() => {});
   await page.waitForTimeout(1500);
   const dc = await page.evaluate(() => window.__dc);
   rec("A36-drawcalls", dc > 0 && dc < 100, `${dc} draw calls in one frame`);
